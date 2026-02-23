@@ -1,12 +1,26 @@
-# shadcn/ui monorepo template
+# Turborepo Template NextJS and Nest.js
 
-This template is for creating a monorepo with shadcn/ui.
+This template is created base on a monorepo with shadcn/ui.
 
-## Usage
+## Adding Nest.js as monorepo
+
+- Step 1: create with monorepo with nest.js CLI
 
 ```bash
-pnpm dlx shadcn@latest init
+nest new api --skip-git --package-manager pnpm
 ```
+
+- Step 2: Config packages
+  - Step 2.1: Adding nestjs.config to typescript-config package
+  - Step 2.2: Adding nest.js to eslint-config package
+  - Step 2.3: Adding import typescript-config and eslint-config to api/package.json
+  - Step 2.4: Update tsconfig.json and eslint.config.mjs to use shared config
+
+## Config prettier
+
+- Step 1: adding prettier-base.js to eslint-config package
+- Step 2: adding .prettierrc.mjs to workspace and use shared config
+- Step 3: update api/.prettier.mjs to use shared config
 
 ## Adding components
 
@@ -27,5 +41,5 @@ Your `tailwind.config.ts` and `globals.css` are already set up to use the compon
 To use the components in your app, import them from the `ui` package.
 
 ```tsx
-import { Button } from "@workspace/ui/components/button"
+import { Button } from '@workspace/ui/components/button';
 ```
