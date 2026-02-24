@@ -22,6 +22,17 @@ nest new api --skip-git --package-manager pnpm
 - Step 2: adding .prettierrc.mjs to workspace and use shared config
 - Step 3: update api/.prettier.mjs to use shared config
 
+## Config Jest
+
+- Step 1: create jest-config package for nextjs and nestjs testing
+- Step 2: update apps/api/package.json
+- Step 3: adding jest.config.ts to apps/api and use shared config
+- Step 4: run
+
+```bash
+pnpm build --filter @workspace/jest-config
+```
+
 ## Adding components
 
 To add components to your app, run the following command at the root of your `web` app:
