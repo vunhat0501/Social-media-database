@@ -1,6 +1,6 @@
 # Turborepo Monorepo Template: Next.js & NestJS
 
-This template provides a robust monorepo foundation featuring a **[Next.js](https://nextjs.org/)** frontend, a **[NestJS](https://nestjs.com/)** backend, and a shared **[shadcn/ui](https://ui.shadcn.com/)** component library. It utilizes Turborepo for fast, incremental build pipelines.
+This template provides a robust monorepo foundation featuring a **[Next.js](https://nextjs.org/)** frontend, a **[NestJS](https://nestjs.com/)** backend, and a shared **[shadcn/ui](https://ui.shadcn.com/)** component library. It utilizes **[Turborepo](https://turborepo.dev/)** for fast, incremental build pipelines.
 
 - [Turborepo Monorepo Template: Next.js \& NestJS](#turborepo-monorepo-template-nextjs--nestjs)
   - [A Few Notes Before Diving In](#a-few-notes-before-diving-in)
@@ -92,6 +92,9 @@ This monorepo uses a centralized testing configuration strategy to keep frontend
 
 6. In your `web` app, create a `jest.setup.ts` file and a `__tests__` folder. Import `@testing-library/jest-dom` inside `jest.setup.ts` so it is globally available to all tests.
 7. Update your frontend `tsconfig.json` to include `"types": ["jest"]`, and add `jest.setup.ts` and the `__tests__` folder to the `include` array. _(Note: As mentioned in the Next.js docs, be mindful of naming collisions with the `Config` type)._
+
+- You also want to add these script to your web package.json `"test": "jest", "test:watch": "jest --watch"`
+
 8. Use `src/entry.ts` to export all the configurations you just created.
 9. Build the shared package so the types and distributions become available across the workspace:
 
@@ -99,7 +102,16 @@ This monorepo uses a centralized testing configuration strategy to keep frontend
 pnpm build --filter @workspace/jest-config
 ```
 
-10. Finally, update your app `package.json` files to include `@workspace/jest-config` as a dependency, and create a local `jest.config.ts` in each app that imports the respective shared config.
+10. Update your app `package.json` files to include `@workspace/jest-config` as a dependency, and create a local `jest.config.ts` in each app that imports the respective shared config.
+11. Finally go to turbo.json and add these line inside your task
+
+```json
+  "test": {},
+  "test:watch": {
+    "cache": false,
+    "persistent": true
+  }
+```
 
 ### 🚨 The Problem It Solves
 
@@ -112,7 +124,6 @@ pnpm build --filter @workspace/jest-config
 - **`base.ts` (The Foundation):** Defines the generic rules. Turns on code coverage, sets the V8 coverage provider, and establishes `jsdom` as the default environment.
 - **`nest.ts` (The Backend Config):** Overwrites the base to use a `node` environment and wires up `ts-jest` to compile NestJS decorators properly.
 - **`next.ts` (The Frontend Config):** Wraps the base config in `next/jest`, allowing Next.js to automatically handle path aliases, SWC compilation, and `.env` loading before tests run.
-- **`package.json` (The Traffic Cop):** Uses the `exports` field to define strict access pathways, ensuring a Next.js app can only import the Next.js config without leaking backend logic.
 
 ---
 
