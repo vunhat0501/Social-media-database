@@ -1,5 +1,5 @@
+import { env } from '@/config/env.config';
 import { join } from 'path';
-import { env } from 'src/config/env.config';
 import { DataSource } from 'typeorm';
 
 export default new DataSource({

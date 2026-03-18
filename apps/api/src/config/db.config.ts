@@ -1,5 +1,5 @@
+import { env } from '@/config/env.config';
 import { registerAs } from '@nestjs/config';
-import { env } from 'src/config/env.config';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 
 export default registerAs(
