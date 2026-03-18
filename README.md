@@ -8,7 +8,7 @@ This template provides a robust monorepo foundation featuring a **[Next.js](http
   - [🚀 Adding a NestJS App to the Monorepo](#-adding-a-nestjs-app-to-the-monorepo)
     - [Step 1: Scaffold the NestJS App](#step-1-scaffold-the-nestjs-app)
     - [Step 2: Configure Shared Packages](#step-2-configure-shared-packages)
-    - [Step 3: Configuring Prettier](#step-3-configuring-prettier)
+  - [Configuring Prettier and Eslint](#configuring-prettier-and-eslint)
   - [🧪 Configuring Jest Testing](#-configuring-jest-testing)
     - [🚨 The Problem It Solves](#-the-problem-it-solves)
     - [📁 File Breakdown](#-file-breakdown)
@@ -63,7 +63,7 @@ Follow these steps to link your new API to the monorepo's shared configuration s
 4. **Extend Configs:** Update your `apps/api/tsconfig.json` and `eslint.config.mjs` to extend these newly shared configurations.
 5. **Troubleshooting:** If TypeScript throws an error stating it cannot find the new files (even with correct paths), open either `tsconfig.json` or `tsconfig.build.json` in your app and explicitly add the file name to the `include` array.
 
-### Step 3: Configuring Prettier
+## Configuring Prettier and Eslint
 
 To ensure consistent code formatting across all applications and packages:
 
@@ -71,6 +71,7 @@ To ensure consistent code formatting across all applications and packages:
 2. **Root Config:** Add a `.prettierrc.mjs` file to the root workspace directory and set it to import and use the shared config.
 3. **App Config:** Update `apps/api/.prettierrc.mjs` and `apps/web/.prettierrc.mjs` to point to the shared configuration.
 4. **Troubleshooting:** Ensure you add `.prettierrc.mjs` to the `include` property of your app's `tsconfig.json` to prevent module resolution errors.
+5. **Update root eslint config file:** You will want to update your .eslintrc.js to new ES format, since the one generate by shadcn/ui or turborepo uses the older format which will be ignore by eslint. Alternatively, you can update your root tsconfig to change this file to ES newer format.
 
 ---
 
