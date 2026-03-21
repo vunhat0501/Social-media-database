@@ -4,9 +4,6 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
   <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
     <p align="center">
 
@@ -15,34 +12,36 @@
 - [NestJS Monorepo with TypeORM](#nestjs-monorepo-with-typeorm)
   - [Table of Contents](#table-of-contents)
   - [Description](#description)
-  - [Database set up](#database-set-up)
-    - [Make sure your env variables are set correctly](#make-sure-your-env-variables-are-set-correctly)
+  - [Database Setup](#database-setup)
+    - [Environment Variable Validation](#environment-variable-validation)
     - [Testing in Database](#testing-in-database)
 
 ## Description
 
-This monorepo is created base on [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository with some changes in order to use turborepo.
+This monorepo is based on the official [NestJS](https://github.com/nestjs/nest) TypeScript starter repository, modified to support a Turborepo architecture.
 
-## Database set up
+## Database Setup
 
-Since Nestjs is a strict [Domain-drive design](https://en.wikipedia.org/wiki/Domain-driven_design) or DDD for short so this project base will be using [TypeORM](https://docs.nestjs.com/techniques/database) as in document. TypeORM allow you to extract entities from different place and migrate them to database instead of having a single schema like Prisma or Drizzle, basically TypeORM encourage you to follow and get use to DDD.
+NestJS strongly encourages a [Domain-Driven Design (DDD)](https://en.wikipedia.org/wiki/Domain-driven_design) architecture. Therefore, this project uses [TypeORM](https://docs.nestjs.com/techniques/database) as its primary ORM. Unlike Prisma or Drizzle, which often rely on a single global schema file, TypeORM allows you to co-locate entities within their respective feature modules and independently sync them to the database. This approach naturally aligns with DDD principles.
 
-First we will create a [module](./src/database/database.module.ts) for database. You can directly connecting to database in your app module with `TypeOrmModule.forRoot` since your app grow larger this will nest your app module, reduce readability.
+First, we create a dedicated [database module](./src/database/database.module.ts). While you could connect directly to the database within the root app module using `TypeOrmModule.forRoot`, extracting this logic into its own module keeps the app module clean and improves readability as the application scales.
 
-Create your own db [configuration](https://docs.nestjs.com/techniques/configuration) is the standard way to connect to your database. We will create a [db.config](./src/config/db.config.ts) and set it with the same variables and setting as in document.
+Using a dedicated [configuration file](https://docs.nestjs.com/techniques/configuration) is the standard approach for managing database connections in NestJS. We use a [db.config](./src/config/db.config.ts) file to securely load and structure these connection variables.
 
-For migration, you will want to create a [DataSource](https://typeorm.io/docs/migrations/setup) file to migrate with TypeORM CLI. This is the way to tell TypeORM where your entities are located and where your migration files will go.
+For database migrations, a [DataSource](https://typeorm.io/docs/migrations/setup) file is required by the TypeORM CLI. This file instructs TypeORM on where to find your application`s entities and where your migration scripts should be generated and executed.
 
-_Note_: You can set synchronize = true in dev environment but **NOT** in production - otherwise you will lose your data.
+_Note_: You can safely set `synchronize = true` in your development environment, but you must **NOT** use it in production, as it can lead to unintended data loss.
 
-[return to table of contents](#table-of-contents)
+[Return to Table of Contents](#table-of-contents)
 
-### Make sure your env variables are set correctly
+### Environment Variable Validation
 
-When working a team and sharing env variable, sometimes you might forget some important ones. So setup a config file with zod purely to check these variable is recommended.
+When working in a team, it is easy to miss required environment variables. To prevent runtime errors, we strictly validate our environment variables using Zod.
 
-Adding dotenv and zod to our monorepo. Config the part to .evn file and setup a basic zod [schema](./src/config/env.config.ts) with necessary variables and export this schema in parsed. From now you will know which variables crash your server.
+After adding `dotenv` and `zod` to the monorepo, we parse the `.env` file against a strict Zod [schema](./src/config/env.config.ts) and export the parsed configuration. If any required variables are missing or incorrectly formatted, the server will intentionally fail to start, providing a clear error message about exactly what is missing.
 
-_Note:_ You will also notice that we use `process.cwd` which is current working directory. Since `__dirname` is relative path to your current directory, and you will definitely run your project with `pnpm run dev`, using `process.cwd` helps your nestjs find the root .env file by locking the directory to apps/api. Basically you don't have to worry about how deep your config or dist folder is.
+_Note:_ You will notice that we use `process.cwd()` (Current Working Directory) instead of `__dirname` to locate our environment files. Because `__dirname` resolves to the file's current location (which changes once compiled into the `dist` folder), `process.cwd()` ensures NestJS consistently looks for the `.env` file at the root of the `apps/api` directory. This guarantees your config works perfectly regardless of how deep the executing file is, which is especially useful when running the app via Turborepo dev commands.
+
+[Return to Table of Contents](#table-of-contents)
 
 ### Testing in Database

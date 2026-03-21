@@ -8,6 +8,10 @@
 
 ## Table of Contents
 
+- [NextJS monorepo with shadcn/ui](#nextjs-monorepo-with-shadcnui)
+  - [Table of Contents](#table-of-contents)
+  - [Manage env variables](#manage-env-variables)
+
 ## Manage env variables
 
 We will also need a config file for nextjs to handle env variable. We will use [@t3-oss/env-nextjs](https://www.npmjs.com/package/@t3-oss/env-nextjs).  
