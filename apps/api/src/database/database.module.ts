@@ -24,9 +24,9 @@ export class DatabaseModule implements OnModuleInit {
 
   onModuleInit() {
     if (this.dataSource.isInitialized) {
-      return new this.logger.log('Database connection established');
+      this.logger.log('Database connection established');
     } else {
-      return new this.logger.error('Database connection failed');
+      this.logger.error('Database connection failed');
     }
   }
 }
