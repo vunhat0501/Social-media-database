@@ -1,7 +1,7 @@
 # NextJS monorepo with shadcn/ui
 
 <p align="center">
-  <a href="https://nextjs.org/" target="blank" style="background-color: white; display: inline-block; padding: 2px;"><img src="https://www.svgrepo.com/show/354113/nextjs-icon.svg" width="120" alt="Next Logo" /></a>
+  <a href="https://nextjs.org/" target="blank"><img src="https://thesvg.org/icons/nextdotjs/default.svg" width="120" alt="Next Logo" /></a>
 </p>
 
   <p align="center">The <a href="https://react.dev/">React Framework</a> for the Web. Used by some of the world's largest companies, Next.js enables you to create high-quality web applications with the power of React components.</p>
