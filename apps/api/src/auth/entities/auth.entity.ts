@@ -4,14 +4,17 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  OneToOne,
+  ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
 } from 'typeorm';
 
-@Entity()
+@Entity('auth')
+@Unique(['user', 'authProvider'])
+@Unique(['authProvider', 'authProviderId'])
 export class Auth {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn('increment')
+  id: number;
 
   @Column({ name: 'hashed_password', nullable: true })
   hashedPassword: string;
@@ -22,8 +25,8 @@ export class Auth {
   @Column({ name: 'auth_provider_id', nullable: true })
   authProviderId: string;
 
-  @Column({ name: 'iss_active', default: false })
-  isActive: boolean;
+  @Column({ name: 'email_verified', default: false })
+  emailVerified: boolean;
 
   @Column({ name: 'refresh_token', nullable: true })
   refreshToken: string;
@@ -31,7 +34,7 @@ export class Auth {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @OneToOne(() => User)
+  @ManyToOne(() => User, (user) => user.auths, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 }
