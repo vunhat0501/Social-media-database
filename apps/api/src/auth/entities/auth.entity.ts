@@ -1,9 +1,11 @@
+import { User } from '@/user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  OneToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity()
@@ -11,27 +13,25 @@ export class Auth {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
-  user_id: string;
+  @Column({ name: 'hashed_password', nullable: true })
+  hashedPassword: string;
 
-  @Column()
-  email: string;
+  @Column({ name: 'auth_provider', default: 'local' })
+  authProvider: string;
 
-  @Column({ nullable: true })
-  hashed_password: string;
+  @Column({ name: 'auth_provider_id', nullable: true })
+  authProviderId: string;
 
-  @Column({ nullable: true })
-  auth_provider: string;
+  @Column({ name: 'iss_active', default: false })
+  isActive: boolean;
 
-  @Column({ default: false })
-  email_confirm: boolean;
+  @Column({ name: 'refresh_token', nullable: true })
+  refreshToken: string;
 
-  @Column({ nullable: true })
-  refresh_token: string;
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date;
 
-  @CreateDateColumn()
-  created_at: Date;
-
-  @UpdateDateColumn()
-  updated_at: Date;
+  @OneToOne(() => User)
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 }

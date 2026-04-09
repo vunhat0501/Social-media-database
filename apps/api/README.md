@@ -19,6 +19,11 @@
   - [Exception Filter](#exception-filter)
   - [Middleware](#middleware)
   - [Interceptor](#interceptor)
+  - [Authentication \& Authorization](#authentication--authorization)
+    - [Create DTO](#create-dto)
+    - [Authentication](#authentication)
+      - [Export user module](#export-user-module)
+      - [Register new user](#register-new-user)
 
 ## Description
 
@@ -45,6 +50,8 @@ When working in a team, it is easy to miss required environment variables. To pr
 After adding `dotenv` and `zod` to the monorepo, we parse the `.env` file against a strict Zod [schema](./src/config/env.config.ts) and export the parsed configuration. If any required variables are missing or incorrectly formatted, the server will intentionally fail to start, providing a clear error message about exactly what is missing.
 
 _Note:_ You will notice that we use `process.cwd()` (Current Working Directory) instead of `__dirname` to locate our environment files. Because `__dirname` resolves to the file's current location (which changes once compiled into the `dist` folder), `process.cwd()` ensures NestJS consistently looks for the `.env` file at the root of the `apps/api` directory. This guarantees your config works perfectly regardless of how deep the executing file is, which is especially useful when running the app via Turborepo dev commands.
+
+PostgreSQL URI format: `postgresql://[user[:password]@][host][:port][/dbname][?params]`
 
 [Return to Table of Contents](#table-of-contents)
 
@@ -90,3 +97,25 @@ Nestjs [interceptors](https://docs.nestjs.com/interceptors) have a set of useful
 If you remember in the previous exception filter, we set up way to send frontend meaningful message. In Timeout interceptor, we will use one of the built-in exception: `RequestTimeoutException()` that will throw a new timeout error after certain amount of time.
 
 [Return to Table of Contents](#table-of-contents)
+
+## Authentication & Authorization
+
+### Create DTO
+
+In this repo, we separate authentication logic with public user logic, mainly so we don't have to manually extract public metadata from sensitive data. We will create these DTO with class-validator.  
+Even though those are separate, some data like username is still used by both DTOs. We also extend update DTO from create DTO instead of having to rewrite logic. Update DTO usually are optional fields.  
+_Note_: DON'T add role into DTO since it can be manipulate by adding role field in the payload from frontend.
+
+[Return to Table of Contents](#table-of-contents)
+
+### Authentication
+
+#### Export user module
+
+Since auth module uses some service that comes from user module, we will have to export `user.service` in `user.module` and import that same module in `auth.module`. By doing this, user module can do it own work like insert or update user profile without have to know/handle hashed password or token.
+
+#### Register new user
+
+1. Create `findByEmail` func using `findByOne({ email })` that return either and email or null to check if user has already existed in database. Base on auth provider, this will help later functions throw exception or make user login the same account with that email if they use more than 1 login method.
+2. In `user.service` we create an async func to save the public metadata to user table
+3. Similar to that, in `auth.service` we have `createUser` that use the above `findByEmail` func and throw ConflictException if email has existed in database. Hash and salt the plain password. Then call to the `create` func in `user.service`, add necessary field needed for auth table, and finally save that auth entity to database.

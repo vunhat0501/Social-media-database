@@ -6,12 +6,12 @@ import { DatabaseModule } from './database/database.module';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { AllExceptionFilter } from '@/common/filter/all-exception/all-exception.filter';
 import { LoggerMiddleware } from '@/common/middleware/logger/logger.middleware';
-import { UsersModule } from './users/users.module';
+import { UserModule } from './user/user.module';
 import { TransformInterceptor } from '@/common/interceptor/transform/transform.interceptor';
 import { TimeoutInterceptor } from '@/common/interceptor/timeout/timeout.interceptor';
 
 @Module({
-  imports: [AuthModule, DatabaseModule, UsersModule],
+  imports: [AuthModule, DatabaseModule, UserModule],
   controllers: [AppController],
   providers: [
     AppService,

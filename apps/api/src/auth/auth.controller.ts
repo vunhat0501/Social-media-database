@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
@@ -7,19 +15,12 @@ import { UpdateAuthDto } from './dto/update-auth.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post()
-  create(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.create(createAuthDto);
-  }
+  // *TODO: create auth guard, strategies, hash user password, create and add access/refresh token to cookie
+  // *TODO: create public, getUser and role decorator */
 
-  @Get()
-  findAll() {
-    return this.authService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
+  @Post('signup')
+  register(@Body() createAuthDto: CreateAuthDto) {
+    return this.authService.createUser(createAuthDto);
   }
 
   @Patch(':id')
