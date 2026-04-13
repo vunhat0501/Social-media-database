@@ -1,8 +1,9 @@
 import { env } from '@/config/env.config';
 import { join } from 'path';
-import { DataSource } from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
+import { SeederOptions } from 'typeorm-extension';
 
-export default new DataSource({
+const options: DataSourceOptions & SeederOptions = {
   type: 'postgres',
   url: env.DATABASE_URL,
 
@@ -14,8 +15,12 @@ export default new DataSource({
 
   entities: [join(__dirname, '../**/*.entity{.ts,.js}')],
   migrations: [join(__dirname, './migrations/*{.ts,.js}')],
+  factories: ['src/database/factories/*{.ts,.js}'],
+  seeds: ['src/database/seeds/*{.ts,.js}'],
 
   //! DO NOT set synchronize to true in production
   synchronize: false,
   logging: true,
-});
+};
+
+export default new DataSource(options);
