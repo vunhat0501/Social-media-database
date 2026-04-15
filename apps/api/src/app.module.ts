@@ -13,11 +13,17 @@ import { PostsModule } from './posts/posts.module';
 import { StoriesModule } from './stories/stories.module';
 import { BookmarksModule } from './bookmarks/bookmarks.module';
 import { SocialModule } from './social/social.module';
-import { BookmarksModule } from './bookmarks/bookmarks.module';
-import { SocialModule } from './social/social.module';
 
 @Module({
-  imports: [AuthModule, DatabaseModule, UserModule, PostsModule, StoriesModule, BookmarksModule, SocialModule],
+  imports: [
+    AuthModule,
+    DatabaseModule,
+    UserModule,
+    PostsModule,
+    StoriesModule,
+    BookmarksModule,
+    SocialModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,
