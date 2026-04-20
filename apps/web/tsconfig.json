@@ -1,7 +1,6 @@
 {
   "extends": "@workspace/typescript-config/nextjs.json",
   "compilerOptions": {
-    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
@@ -22,7 +21,8 @@
     ".next/types/**/*.ts",
     "./jest.config.ts",
     "./jest.setup.ts",
-    "__tests__/**/*"
+    "__tests__/**/*",
+    "../../packages/ui/src/hooks/use-mobile.ts"
   ],
   "exclude": ["node_modules"]
 }

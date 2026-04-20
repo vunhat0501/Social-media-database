@@ -12,6 +12,7 @@ if (!existsSync(envPath)) {
 config({ path: envPath });
 
 const envSchema = z.object({
+  FRONTEND_URL: z.string().default('http://localhost:3000'),
   DATABASE_URL: z
     .string({
       required_error: 'DATABASE_URL is required',
@@ -29,6 +30,11 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
     .default('development'),
+
+  JWT_SECRET: z.string().default('secret'),
+  JWT_EXPIRES_IN: z.coerce.number().default(300),
+  REFRESH_JWT_SECRET: z.string().default('secret'),
+  REFRESH_JWT_EXPIRES_IN: z.coerce.number().default(604800),
 });
 
 export const env = envSchema.parse(process.env);

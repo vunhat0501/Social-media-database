@@ -6,6 +6,11 @@
       "@workspace/ui/*": ["./src/*"]
     }
   },
-  "include": ["."],
+  "include": [
+    ".",
+    "../../apps/web/components/submit-button.tsx",
+    "src/hooks/use-mobile.ts",
+    "../../apps/web/proxy.tsx"
+  ],
   "exclude": ["node_modules", "dist"]
 }

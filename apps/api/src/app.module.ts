@@ -13,6 +13,7 @@ import { PostsModule } from './posts/posts.module';
 import { StoriesModule } from './stories/stories.module';
 import { BookmarksModule } from './bookmarks/bookmarks.module';
 import { SocialModule } from './social/social.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { SocialModule } from './social/social.module';
     StoriesModule,
     BookmarksModule,
     SocialModule,
+    ConfigModule.forRoot({ isGlobal: true }),
   ],
   controllers: [AppController],
   providers: [

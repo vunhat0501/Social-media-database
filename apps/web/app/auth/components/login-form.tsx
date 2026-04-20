@@ -1,26 +1,32 @@
-import { cn } from "@workspace/ui/lib/utils"
-import { Button } from "@workspace/ui/components/button"
+'use client';
+
+import { cn } from '@workspace/ui/lib/utils';
+import { Button } from '@workspace/ui/components/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@workspace/ui/components/card"
+} from '@workspace/ui/components/card';
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@workspace/ui/components/field"
-import { Input } from "@workspace/ui/components/input"
+} from '@workspace/ui/components/field';
+import { Input } from '@workspace/ui/components/input';
+import SubmitButton from '@/app/auth/components/submit-button';
+import { login } from '@/app/auth/lib/auth';
+import { useActionState } from 'react';
 
 export function LoginForm({
   className,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<'div'>) {
+  const [state, action] = useActionState(login, undefined);
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
@@ -29,17 +35,24 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form action={action}>
             <FieldGroup>
+              {state?.message && (
+                <p className="text-sm text-red-500">{state.message}</p>
+              )}
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="m@example.com"
                   required
                 />
               </Field>
+              {state?.error?.email && (
+                <p className="text-sm text-red-500">{state.error.email}</p>
+              )}
               <Field>
                 <div className="flex items-center">
                   <FieldLabel htmlFor="password">Password</FieldLabel>
@@ -50,15 +63,18 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input id="password" name="password" type="password" required />
               </Field>
+              {state?.error?.password && (
+                <p className="text-sm text-red-500">{state.error.password}</p>
+              )}
               <Field>
-                <Button type="submit">Login</Button>
+                <SubmitButton text="Sign In" loadingText="Authenticating..." />
                 <Button variant="outline" type="button">
                   Login with Google
                 </Button>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
+                  Don&apos;t have an account? <a href="/auth/signup">Sign up</a>
                 </FieldDescription>
               </Field>
             </FieldGroup>
@@ -66,5 +82,5 @@ export function LoginForm({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

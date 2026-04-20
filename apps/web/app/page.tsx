@@ -1,4 +1,3 @@
-import { LoginForm } from '@/components/login-form';
 import { Button } from '@workspace/ui/components/button';
 
 export default function Page() {
@@ -12,9 +11,6 @@ export default function Page() {
             <Button variant="outline">Outline</Button>
           </div>
         </div>
-      </div>
-      <div>
-        <LoginForm />
       </div>
     </div>
   );

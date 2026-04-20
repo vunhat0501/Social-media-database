@@ -18,5 +18,6 @@
       "comments": false,
       "strings": true
     }
-  }
+  },
+  "js/ts.tsdk.path": "node_modules\\typescript\\lib"
 }
