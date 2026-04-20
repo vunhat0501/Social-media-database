@@ -1,6 +1,6 @@
-# Structure
+# Command structure
 
-`npx -y tree-cli -l 9 --ignore "node_modules,.git,dist,build,.turbo" -o structure.md`
+`npx -y tree-cli -l 9 --ignore "node_modules,.git,dist,.next,.swc,build,.turbo" -o structure.md`
 
 ```markdown
 ├── apps
@@ -21,12 +21,32 @@
 | | | | ├── auth.module.ts
 | | | | ├── auth.service.spec.ts
 | | | | ├── auth.service.ts
+| | | | ├── config
+| | | | | ├── jwt.config.ts
+| | | | | └── refresh.config.ts
+| | | | ├── decorators
+| | | | | └── get-user.decorator.ts
 | | | | ├── dto
 | | | | | ├── create-auth.dto.ts
-| | | | | ├── login.dto.ts
 | | | | | └── update-auth.dto.ts
-| | | | └── entities
-| | | | └── auth.entity.ts
+| | | | ├── entities
+| | | | | └── auth.entity.ts
+| | | | ├── guards
+| | | | | ├── jwt-auth
+| | | | | | ├── jwt-auth.guard.spec.ts
+| | | | | | └── jwt-auth.guard.ts
+| | | | | ├── local-auth
+| | | | | | ├── local-auth.guard.spec.ts
+| | | | | | └── local-auth.guard.ts
+| | | | | └── refresh-auth
+| | | | | ├── refresh-auth.guard.spec.ts
+| | | | | └── refresh-auth.guard.ts
+| | | | ├── strategies
+| | | | | ├── jwt.strategy.ts
+| | | | | ├── local.strategy.ts
+| | | | | └── refresh-jwt.strategy.ts
+| | | | └── types
+| | | | └── auth-jwt-payload.d.ts
 | | | ├── bookmarks
 | | | | ├── bookmarks.controller.spec.ts
 | | | | ├── bookmarks.controller.ts
@@ -124,11 +144,32 @@
 | | └── tsconfig.json
 | └── web
 | ├── app
+| | ├── (protected)
+| | | ├── components
+| | | | └── app-sidebar.tsx
+| | | ├── fyp
+| | | | └── page.tsx
+| | | ├── layout.tsx
+| | | └── profile
+| | | └── page.tsx
+| | ├── auth
+| | | ├── components
+| | | | ├── login-form.tsx
+| | | | ├── signup-form.tsx
+| | | | └── submit-button.tsx
+| | | ├── layout.tsx
+| | | ├── lib
+| | | | ├── auth.ts
+| | | | └── type.ts
+| | | ├── login
+| | | | └── page.tsx
+| | | └── signup
+| | | └── page.tsx
 | | ├── favicon.ico
 | | ├── layout.tsx
 | | └── page.tsx
 | ├── components
-| | ├── login-form.tsx
+| | ├── authProvider.tsx
 | | └── providers.tsx
 | ├── components.json
 | ├── config
@@ -152,11 +193,15 @@
 | ├── jest.config.ts
 | ├── jest.setup.ts
 | ├── lib
+| | └── api.ts
 | ├── next-env.d.ts
 | ├── next.config.mjs
 | ├── package.json
 | ├── postcss.config.mjs
+| ├── proxy.tsx
 | ├── README.md
+| ├── store
+| | └── useAuthStore.ts
 | ├── tsconfig.json
 | └── **tests**
 | └── page.test.tsx
@@ -194,13 +239,20 @@
 | ├── postcss.config.mjs
 | ├── src
 | | ├── components
+| | | ├── avatar.tsx
 | | | ├── button.tsx
 | | | ├── card.tsx
+| | | ├── dropdown-menu.tsx
 | | | ├── field.tsx
 | | | ├── input.tsx
 | | | ├── label.tsx
-| | | └── separator.tsx
+| | | ├── separator.tsx
+| | | ├── sheet.tsx
+| | | ├── sidebar.tsx
+| | | ├── skeleton.tsx
+| | | └── tooltip.tsx
 | | ├── hooks
+| | | └── use-mobile.ts
 | | ├── lib
 | | | └── utils.ts
 | | └── styles
@@ -221,3 +273,7 @@
 ├── tsconfig.json
 └── turbo.json
 ```
+
+directory: 131 file: 496 symboliclink: 121
+
+ignored: directory (8)
