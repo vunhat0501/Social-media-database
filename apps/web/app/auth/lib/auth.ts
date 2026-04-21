@@ -130,6 +130,6 @@ export async function login(
 export async function logout() {
   const cookieStore = await cookies();
   cookieStore.delete('access_token');
-  cookieStore.delete('fresh_token');
+  cookieStore.delete('refresh_token');
   redirect('/auth/login');
 }
