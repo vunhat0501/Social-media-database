@@ -68,65 +68,20 @@ export async function login(
     };
   }
 
+  // NOTE: In the new client-side login approach, this Server Action 
+  // can be used as a fallback or removed if the client handles the API call directly.
+  // For now, we simplify it by removing the manual cookie parsing logic.
+  
   const { email, password } = validationFields.data;
 
   try {
-    const response = await axios.post(
+    await axios.post(
       `${env.NEXT_PUBLIC_BACKEND_URL}/auth/signin`,
       {
         email,
         password,
       },
     );
-
-    const setCookieHeaders = response.headers['set-cookie'];
-    // console.log('raw header session: ', setCookieHeaders);
-
-    if (setCookieHeaders && setCookieHeaders.length > 0) {
-      const cookieStore = await cookies();
-      setCookieHeaders.forEach((cookieString) => {
-        const parts = cookieString
-          .split(';')
-          .map((p) => p.trim())
-          .filter(Boolean);
-        if (parts.length === 0) return;
-        const firstPart = parts[0];
-        if (!firstPart) return;
-
-        const [namePart, valuePart] = firstPart.split('=');
-
-        if (!namePart || valuePart === undefined) return;
-
-        const name = namePart.trim();
-        const value = valuePart.trim();
-
-        if (!name || !value) return;
-
-        const maxAgePart = parts.find(
-          (p) => p && p.toLowerCase().startsWith('max-age='),
-        );
-
-        let maxAge = 60 * 60; // Default 1 hour
-
-        if (maxAgePart) {
-          const splitMaxAge = maxAgePart.split('=');
-          if (splitMaxAge.length === 2 && splitMaxAge[1]) {
-            const parsed = parseInt(splitMaxAge[1], 10);
-            if (!isNaN(parsed)) {
-              maxAge = parsed;
-            }
-          }
-        }
-
-        cookieStore.set(name, value, {
-          httpOnly: true,
-          secure: env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-          maxAge,
-        });
-      });
-    }
   } catch (error) {
     if (isAxiosError(error)) {
       if (error.response?.status === 404) {

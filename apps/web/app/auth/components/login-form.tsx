@@ -16,15 +16,38 @@ import {
   FieldLabel,
 } from '@workspace/ui/components/field';
 import { Input } from '@workspace/ui/components/input';
-import SubmitButton from '@/app/auth/components/submit-button';
-import { login } from '@/app/auth/lib/auth';
-import { useActionState } from 'react';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<'div'>) {
-  const [state, action] = useActionState(login, undefined);
+  const { signIn } = useAuthStore();
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    try {
+      await signIn({ email, password });
+      router.push('/profile');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
       <Card>
@@ -35,10 +58,10 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={action}>
+          <form onSubmit={handleSubmit}>
             <FieldGroup>
-              {state?.message && (
-                <p className="text-sm text-red-500">{state.message}</p>
+              {error && (
+                <p className="text-sm text-red-500">{error}</p>
               )}
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -50,9 +73,6 @@ export function LoginForm({
                   required
                 />
               </Field>
-              {state?.error?.email && (
-                <p className="text-sm text-red-500">{state.error.email}</p>
-              )}
               <Field>
                 <div className="flex items-center">
                   <FieldLabel htmlFor="password">Password</FieldLabel>
@@ -65,12 +85,11 @@ export function LoginForm({
                 </div>
                 <Input id="password" name="password" type="password" required />
               </Field>
-              {state?.error?.password && (
-                <p className="text-sm text-red-500">{state.error.password}</p>
-              )}
               <Field>
-                <SubmitButton text="Sign In" loadingText="Authenticating..." />
-                <Button variant="outline" type="button">
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? 'Authenticating...' : 'Sign In'}
+                </Button>
+                <Button variant="outline" type="button" className="w-full">
                   Login with Google
                 </Button>
                 <FieldDescription className="text-center">
