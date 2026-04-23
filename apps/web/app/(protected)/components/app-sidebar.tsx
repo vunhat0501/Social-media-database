@@ -1,6 +1,6 @@
 'use client'; // Required for usePathname
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useParams } from 'next/navigation'; // <-- Thêm useParams
 import {
   Sparkles,
   User as UserIcon,
@@ -35,16 +35,21 @@ import {
 } from '@workspace/ui/components/avatar';
 import { useAuthStore } from '@/store/useAuthStore';
 
-const navItems = [
-  { title: 'For You', url: '/fyp', icon: Sparkles },
-  { title: 'Explore', url: '/explore', icon: Hash },
-  { title: 'Profile', url: '/profile', icon: UserIcon },
-];
+// LƯU Ý: Đã xóa navItems ở đây và chuyển vào bên trong component
 
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const params = useParams(); // <-- Lấy params từ URL hiện tại
   const { user, logout } = useAuthStore();
+
+  // Chuyển navItems vào đây để có thể sử dụng params.id
+  // Nếu không có id trên URL, nó sẽ fallback về '/explore' mặc định
+  const navItems = [
+    { title: 'For You', url: '/fyp', icon: Sparkles },
+    { title: 'Explore', url: params?.id ? `/explore/${params.id}` : '/explore', icon: Hash },
+    { title: 'Profile', url: '/profile', icon: UserIcon },
+  ];
 
   const handleLogout = async () => {
     await logout();
@@ -53,6 +58,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar variant="inset">
+      {/* ... Phần JSX còn lại giữ nguyên như cũ ... */}
       <SidebarHeader className="h-16 flex items-center justify-center border-b px-4">
         <div className="flex w-full items-center gap-2 font-bold text-lg tracking-tight">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -70,7 +76,8 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => {
-                const isActive = pathname === item.url;
+                // Kiểm tra active (Có thể cần điều chỉnh nếu URL chứa ID)
+                const isActive = pathname.startsWith(item.url);
 
                 return (
                   <SidebarMenuItem key={item.title}>
@@ -93,6 +100,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t p-4">
+        {/* ... Phần Footer của bạn giữ nguyên ... */}
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
@@ -102,17 +110,14 @@ export function AppSidebar() {
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
-                    {/* Optional: You can make the src dynamic if your user object has an avatar URL later */}
                     <AvatarImage
                       src="/avatars/shadcn.jpg"
                       alt={user?.name || 'User Avatar'}
                     />
                     <AvatarFallback className="rounded-lg">
-                      {/* Grabs the first two letters of their name, or defaults to "U" */}
                       {user?.name?.substring(0, 2).toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  {/* TODO: Use real user data */}
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     {user ? (
                       <>
@@ -144,9 +149,6 @@ export function AppSidebar() {
                   Account Settings
                 </DropdownMenuItem>
 
-                {/* Attach the onClick handler here! 
-                  Added cursor-pointer so it feels like a real button 
-                */}
                 <DropdownMenuItem
                   onClick={handleLogout}
                   className="text-red-500 focus:text-red-500 focus:bg-red-50 dark:focus:bg-red-950 cursor-pointer"
