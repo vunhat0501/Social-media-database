@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { JwtAuthGuard } from '@/auth/guards/jwt-auth/jwt-auth.guard';
+import { GetUser } from '@/auth/decorators/get-user.decorator';
 
 @Controller('posts')
 export class PostsController {
@@ -15,6 +17,12 @@ export class PostsController {
   @Get()
   findAll() {
     return this.postsService.findAll();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('following')
+  findFollowing(@GetUser('id') userId: number) {
+    return this.postsService.findFollowingPosts(userId);
   }
 
   @Get(':id')

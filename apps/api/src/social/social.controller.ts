@@ -15,4 +15,13 @@ export class SocialController {
   ) {
     return this.socialService.toggleLike(postId, userId);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('follow/:userId')
+  toggleFollow(
+    @Param('userId', ParseIntPipe) followedUserId: number,
+    @GetUser('id') followingUserId: number,
+  ) {
+    return this.socialService.toggleFollow(followedUserId, followingUserId);
+  }
 }

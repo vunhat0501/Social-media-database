@@ -41,7 +41,7 @@ export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const params = useParams(); // <-- Lấy params từ URL hiện tại
-  const { user, logout } = useAuthStore();
+  const { user, signOut } = useAuthStore();
 
   // Chuyển navItems vào đây để có thể sử dụng params.id
   // Nếu không có id trên URL, nó sẽ fallback về '/explore' mặc định
@@ -52,8 +52,8 @@ export function AppSidebar() {
   ];
 
   const handleLogout = async () => {
-    await logout();
-    router.push('/auth/login');
+    await signOut();
+    router.push('/auth/signin');
   };
 
   return (

@@ -18,7 +18,23 @@ export class PostsService {
 
   findAll() {
     return this.postsRepository.find({
-      relations: ['user', 'media', 'comments', 'comments.user', 'likes'],
+      relations: ['user', 'user.followers', 'media', 'comments', 'comments.user', 'likes', 'hashtags', 'hashtags.hashtag'],
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+  }
+
+  findFollowingPosts(userId: number) {
+    return this.postsRepository.find({
+      where: {
+        user: {
+          followers: {
+            followingUserId: userId,
+          },
+        },
+      },
+      relations: ['user', 'user.followers', 'media', 'comments', 'comments.user', 'likes', 'hashtags', 'hashtags.hashtag'],
       order: {
         createdAt: 'DESC',
       },
@@ -28,7 +44,7 @@ export class PostsService {
   findOne(id: number) {
     return this.postsRepository.findOne({
       where: { id },
-      relations: ['user', 'media', 'comments', 'comments.user', 'likes'],
+      relations: ['user', 'user.followers', 'media', 'comments', 'comments.user', 'likes', 'hashtags', 'hashtags.hashtag'],
       order: {
         media: {
           sequenceOrder: 'ASC',

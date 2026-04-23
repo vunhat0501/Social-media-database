@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useState, use } from 'react';
+import React, { useEffect, useState, use, useRef } from 'react';
 import { api } from '@/lib/api';
 import { Avatar, AvatarFallback, AvatarImage } from '@workspace/ui/components/avatar';
 import { Input } from '@workspace/ui/components/input';
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 
 export default function ExplorePostPage({ params }: { params: Promise<{ id: string }> }) {
@@ -18,9 +18,13 @@ export default function ExplorePostPage({ params }: { params: Promise<{ id: stri
   const [loading, setLoading] = useState(true);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
   const [newComment, setNewComment] = useState('');
+  const sliderRef = useRef<HTMLDivElement>(null);
+
+  const isOwnPost = currentUserId !== null && post?.user?.id === currentUserId;
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -30,6 +34,7 @@ export default function ExplorePostPage({ params }: { params: Promise<{ id: stri
         setPost(data);
         if (currentUserId) {
           setIsLiked(data.likes?.some((like: any) => like.userId === currentUserId) || false);
+          setIsFollowing(data.user?.followers?.some((f: any) => f.followingUserId === currentUserId) || false);
         }
         setLikeCount(data.likes?.length || 0);
       } catch (error) {
@@ -71,6 +76,18 @@ export default function ExplorePostPage({ params }: { params: Promise<{ id: stri
     }
   };
 
+  const scrollLeft = () => {
+    if (sliderRef.current) {
+      sliderRef.current.scrollBy({ left: -sliderRef.current.clientWidth, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (sliderRef.current) {
+      sliderRef.current.scrollBy({ left: sliderRef.current.clientWidth, behavior: 'smooth' });
+    }
+  };
+
   const handleLike = async () => {
     const newIsLiked = !isLiked;
     setIsLiked(newIsLiked);
@@ -88,6 +105,19 @@ export default function ExplorePostPage({ params }: { params: Promise<{ id: stri
     }
   };
 
+  const handleFollow = async () => {
+    if (isOwnPost) return;
+    const newIsFollowing = !isFollowing;
+    setIsFollowing(newIsFollowing);
+
+    try {
+      await api.post(`/social/follow/${post.user?.id}`);
+    } catch (error) {
+      setIsFollowing(!newIsFollowing);
+      console.error('Failed to toggle follow', error);
+    }
+  };
+
   const handleDoubleClick = () => {
     if (!isLiked) {
       handleLike();
@@ -101,6 +131,32 @@ export default function ExplorePostPage({ params }: { params: Promise<{ id: stri
     setTimeout(() => setShowHeartAnimation(false), 1000);
   };
 
+  const renderCaption = () => {
+    if (!post.title && !post.hashtags?.length) return null;
+    
+    const text = post.title || '';
+    const parts = text.split(/(#[\w_]+)/g);
+    
+    const hashtagsInText = parts.filter((part: string) => part.startsWith('#')).map((part: string) => part.substring(1).toLowerCase());
+    const extraHashtags = post.hashtags?.filter((ph: any) => !hashtagsInText.includes(ph.hashtag?.name?.toLowerCase())) || [];
+
+    return (
+      <span className="text-zinc-200 whitespace-pre-wrap break-words">
+        {parts.map((part: string, i: number) => {
+          if (part.startsWith('#')) {
+            return <span key={i} className="text-blue-400 font-medium hover:text-blue-300 transition-colors cursor-pointer">{part}</span>;
+          }
+          return part;
+        })}
+        {extraHashtags.length > 0 && (
+          <span className="text-blue-400 font-medium hover:text-blue-300 transition-colors cursor-pointer">
+            {' '}{extraHashtags.map((ph: any) => `#${ph.hashtag?.name}`).join(' ')}
+          </span>
+        )}
+      </span>
+    );
+  };
+
   return (
     <div className="min-h-[calc(100vh-2rem)] flex items-center justify-center py-4">
       {/* Main Container - Instagram Web Style */}
@@ -109,6 +165,7 @@ export default function ExplorePostPage({ params }: { params: Promise<{ id: stri
         {/* Left Side - Image Slider */}
         <div className="relative w-full md:w-[60%] h-[50vh] md:h-full bg-zinc-950 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-zinc-800 group">
           <div 
+            ref={sliderRef}
             className="flex w-full h-full overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth select-none cursor-pointer"
             onScroll={handleScroll}
             onDoubleClick={handleDoubleClick}
@@ -125,6 +182,24 @@ export default function ExplorePostPage({ params }: { params: Promise<{ id: stri
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
               <Heart className="w-32 h-32 text-white fill-white animate-in zoom-in duration-300 drop-shadow-2xl" />
             </div>
+          )}
+
+          {/* Carousel Navigation Buttons */}
+          {media.length > 1 && activeImageIndex > 0 && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); scrollLeft(); }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all z-20 backdrop-blur-sm"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          )}
+          {media.length > 1 && activeImageIndex < media.length - 1 && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); scrollRight(); }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-black/50 hover:bg-black/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all z-20 backdrop-blur-sm"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
           )}
 
           {/* Image Indicators */}
@@ -151,7 +226,17 @@ export default function ExplorePostPage({ params }: { params: Promise<{ id: stri
                 <AvatarFallback className="text-black">{post.user?.userName?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
               </Avatar>
               <span className="font-semibold text-sm hover:text-zinc-300 cursor-pointer transition">{post.user?.userName || 'user'}</span>
-              <span className="text-zinc-500 text-xs font-medium">• Theo dõi</span>
+              {!isOwnPost && (
+                <>
+                  <span className="text-zinc-500 text-xs font-medium">•</span>
+                  <button 
+                    onClick={handleFollow}
+                    className={`text-xs font-semibold transition ${isFollowing ? 'text-zinc-400 hover:text-zinc-300' : 'text-blue-500 hover:text-white'}`}
+                  >
+                    {isFollowing ? 'Đang theo dõi' : 'Theo dõi'}
+                  </button>
+                </>
+              )}
             </div>
             <MoreHorizontal className="w-5 h-5 cursor-pointer hover:text-zinc-400 transition" />
           </div>
@@ -169,7 +254,7 @@ export default function ExplorePostPage({ params }: { params: Promise<{ id: stri
                 <div>
                   <p className="text-sm">
                     <span className="font-semibold mr-2 hover:text-zinc-300 cursor-pointer">{post.user?.userName || 'user'}</span>
-                    <span className="text-zinc-200">{post.title}</span>
+                    {renderCaption()}
                   </p>
                 </div>
               </div>

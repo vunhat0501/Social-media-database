@@ -12,16 +12,33 @@ export const PostItem = ({ post }: { post: any }) => {
 
   const [isCommentOpen, setIsCommentOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likes?.length || 0);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
+
+  const isOwnPost = currentUserId !== null && post.user?.id === currentUserId;
 
   useEffect(() => {
     if (currentUserId) {
       setIsLiked(post.likes?.some((like: any) => like.userId === currentUserId) || false);
+      setIsFollowing(post.user?.followers?.some((f: any) => f.followingUserId === currentUserId) || false);
     }
-  }, [currentUserId, post.likes]);
+  }, [currentUserId, post.likes, post.user?.followers]);
   
   const toggleComment = () => setIsCommentOpen(!isCommentOpen);
+
+  const handleFollow = async () => {
+    if (isOwnPost) return;
+    const newIsFollowing = !isFollowing;
+    setIsFollowing(newIsFollowing);
+
+    try {
+      await api.post(`/social/follow/${post.user?.id}`);
+    } catch (error) {
+      setIsFollowing(!newIsFollowing);
+      console.error('Failed to toggle follow', error);
+    }
+  };
 
   const handleLike = async () => {
     // Optimistic UI update
@@ -59,6 +76,32 @@ export const PostItem = ({ post }: { post: any }) => {
   // Safely get media URL, ignoring mediaType as requested
   const mediaUrl = post.media?.[0]?.mediaUrl || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop';
   
+  const renderCaption = () => {
+    if (!post.title && !post.hashtags?.length) return null;
+    
+    const text = post.title || '';
+    const parts = text.split(/(#[\w_]+)/g);
+    
+    const hashtagsInText = parts.filter((part: string) => part.startsWith('#')).map((part: string) => part.substring(1).toLowerCase());
+    const extraHashtags = post.hashtags?.filter((ph: any) => !hashtagsInText.includes(ph.hashtag?.name?.toLowerCase())) || [];
+
+    return (
+      <p className="text-sm line-clamp-2 drop-shadow-md">
+        {parts.map((part: string, i: number) => {
+          if (part.startsWith('#')) {
+            return <span key={i} className="text-blue-400 font-medium hover:text-blue-300 transition-colors cursor-pointer">{part}</span>;
+          }
+          return part;
+        })}
+        {extraHashtags.length > 0 && (
+          <span className="text-blue-400 font-medium hover:text-blue-300 transition-colors cursor-pointer">
+            {' '}{extraHashtags.map((ph: any) => `#${ph.hashtag?.name}`).join(' ')}
+          </span>
+        )}
+      </p>
+    );
+  };
+
   return (
     <div className="h-full snap-start snap-always flex items-center justify-center relative w-full mb-4">
       <div className={`flex h-[90%] max-h-[850px] transition-all duration-300 ease-in-out ${isCommentOpen ? 'w-[750px]' : 'w-[450px]'}`}>
@@ -85,11 +128,18 @@ export const PostItem = ({ post }: { post: any }) => {
                 <AvatarFallback className="text-black">{post.user?.userName?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
               </Avatar>
               <span className="font-semibold text-sm drop-shadow-md">{post.user?.userName || 'user'}</span>
-              <Button variant="outline" size="sm" className="h-6 text-xs ml-2 rounded-full border-white text-white hover:bg-white hover:text-black bg-transparent">
-                Theo dõi
-              </Button>
+              {!isOwnPost && (
+                <Button 
+                  onClick={handleFollow}
+                  variant="outline" 
+                  size="sm" 
+                  className={`h-6 text-xs ml-2 rounded-full border-white hover:bg-white hover:text-black transition-colors ${isFollowing ? 'bg-white text-black' : 'bg-transparent text-white'}`}
+                >
+                  {isFollowing ? 'Đang theo dõi' : 'Theo dõi'}
+                </Button>
+              )}
             </div>
-            <p className="text-sm line-clamp-2 drop-shadow-md">{post.title}</p>
+            {renderCaption()}
           </div>
 
           {/* Action Bar (Right side, floating inside media) */}

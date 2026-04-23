@@ -80,7 +80,7 @@ export class AuthService {
     };
   }
 
-  async login(userId: number, name: string) {
+  async signIn(userId: number, name: string) {
     const { accessToken, refreshToken } = await this.generateTokens(userId);
     const hashedRefreshToken = await hash(refreshToken);
     const result = await this.authRepository.update(
@@ -105,7 +105,7 @@ export class AuthService {
     };
   }
 
-  async logout(userId: number) {
+  async signOut(userId: number) {
     return this.authRepository.update(
       { user: userId as any, authProvider: 'local' },
       { refreshToken: null },

@@ -3,6 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { PostItem } from './components/post-item';
+import Link from 'next/link';
+import { Button } from '@workspace/ui/components/button';
+import { Users } from 'lucide-react';
 
 export default function FYP() {
   const [posts, setPosts] = useState<any[]>([]);
@@ -11,7 +14,7 @@ export default function FYP() {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await api.get('/posts');
+        const response = await api.get('/posts/following');
         // Backend's TransformInterceptor wraps the response body in { data: ... }
         // Axios also wraps the response body in response.data
         // So the array is at response.data.data
@@ -43,8 +46,21 @@ export default function FYP() {
 
   if (posts.length === 0) {
     return (
-      <div className="flex h-[calc(100vh-2rem)] items-center justify-center text-zinc-400">
-        No posts available right now.
+      <div className="flex h-[calc(100vh-2rem)] items-center justify-center bg-zinc-950 rounded-lg">
+        <div className="max-w-md w-full p-8 text-center flex flex-col items-center animate-in fade-in zoom-in duration-500">
+          <div className="w-20 h-20 bg-zinc-900 rounded-full flex items-center justify-center mb-6">
+            <Users className="w-10 h-10 text-zinc-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-3">Chưa có bài viết nào</h2>
+          <p className="text-zinc-400 mb-8 leading-relaxed">
+            Bạn chưa theo dõi ai hoặc những người bạn theo dõi chưa có bài viết nào. Hãy khám phá những người bạn mới để lấp đầy bảng tin của mình nhé!
+          </p>
+          <Link href="/explore">
+            <Button className="bg-white text-black hover:bg-zinc-200 px-8 py-6 rounded-full font-bold text-base transition-all active:scale-95 shadow-lg shadow-white/5">
+              Khám phá ngay
+            </Button>
+          </Link>
+        </div>
       </div>
     );
   }
