@@ -19,26 +19,23 @@ import { Request, Response } from 'express';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth/jwt-auth.guard';
 import { GetUser } from '@/auth/decorators/get-user.decorator';
 import { RefreshAuthGuard } from '@/auth/guards/refresh-auth/refresh-auth.guard';
-import { TokenInterceptor } from './interceptor/token.interceptor';
+import { TokenInterceptor } from '@/auth/interceptor/token.interceptor';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  // *TODO: create auth guard, strategies, hash user password, create and add access/refresh token to cookie
-  // *TODO: create public, getUser and role decorator */
-
   @Post('signup')
-  register(@Body() createAuthDto: CreateAuthDto) {
+  signUp(@Body() createAuthDto: CreateAuthDto) {
     return this.authService.createUser(createAuthDto);
   }
 
   @UseGuards(LocalAuthGuard)
   @UseInterceptors(TokenInterceptor)
   @Post('signin')
-  async login(@Req() req: Request) {
+  async signIn(@Req() req: Request) {
     const user = req.user as { id: number; name: string };
-    return this.authService.login(user.id, user.name);
+    return this.authService.signIn(user.id, user.name);
   }
 
   @UseGuards(RefreshAuthGuard)
@@ -61,11 +58,11 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Post('signout')
-  async logout(
+  async signOut(
     @GetUser('id') userId: number,
     @Res({ passthrough: true }) res: Response,
   ) {
-    await this.authService.logout(userId);
+    await this.authService.signOut(userId);
     res.clearCookie('access_token', { path: '/' });
     res.clearCookie('refresh_token', { path: '/' });
     return { success: true };

@@ -21,6 +21,7 @@ export class TokenInterceptor implements NestInterceptor {
             secure: env.NODE_ENV === 'production',
             sameSite: 'lax',
             maxAge: 1000 * 60 * 15, // 15 mins
+            path: '/',
           });
           delete data.accessToken;
         }

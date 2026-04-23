@@ -32,7 +32,6 @@ export const config = [
       'prefer-spread': 'warn',
       'prefer-arrow-callback': 'error',
       'no-useless-constructor': 'error',
-      'class-methods-use-this': 'error',
       'no-duplicate-imports': 'warn',
     },
   },

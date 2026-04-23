@@ -44,11 +44,11 @@ const navItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user, signOut } = useAuthStore();
 
   const handleLogout = async () => {
-    await logout();
-    router.push('/auth/login');
+    await signOut();
+    router.push('/auth/signin');
   };
 
   return (

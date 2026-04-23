@@ -1,4 +1,4 @@
-import { logout } from '@/app/auth/lib/auth';
+import { signOut as authSignOut } from '@/app/auth/lib/auth';
 import { api } from '@/lib/api';
 import { create } from 'zustand';
 
@@ -13,9 +13,13 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
 
+  signUp: (credentials: {
+    name: string;
+    email: string;
+    password: string;
+  }) => Promise<void>;
   signIn: (credentials: any) => Promise<void>;
-  login: (userData: User) => void;
-  logout: () => Promise<void>;
+  signOut: () => Promise<void>;
   checkSession: () => Promise<void>;
 }
 
@@ -23,6 +27,21 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
   isLoading: true,
+
+  signUp: async (credentials) => {
+    try {
+      const payload = {
+        userName: credentials.name,
+        email: credentials.email,
+        password: credentials.password,
+      };
+
+      await api.post('/auth/signup', payload);
+    } catch (error) {
+      console.error('Signup error:', error);
+      throw error;
+    }
+  },
 
   signIn: async (credentials) => {
     try {
@@ -35,16 +54,13 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  login: (userData: User) =>
-    set({ user: userData, isAuthenticated: true, isLoading: false }),
-
-  logout: async () => {
+  signOut: async () => {
     try {
       await api.post('/auth/signout');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      await logout();
+      await authSignOut();
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },

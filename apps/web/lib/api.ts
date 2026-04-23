@@ -70,7 +70,7 @@ api.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError as AxiosError);
         if (typeof window !== 'undefined') {
-          window.location.href = '/auth/login';
+          window.location.href = '/auth/signin';
         }
         return Promise.reject(error);
       } finally {
