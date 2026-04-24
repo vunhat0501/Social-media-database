@@ -16,20 +16,22 @@ import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { LocalAuthGuard } from '@/auth/guards/local-auth/local-auth.guard';
 import { Request, Response } from 'express';
-import { JwtAuthGuard } from '@/auth/guards/jwt-auth/jwt-auth.guard';
 import { GetUser } from '@/auth/decorators/get-user.decorator';
 import { RefreshAuthGuard } from '@/auth/guards/refresh-auth/refresh-auth.guard';
 import { TokenInterceptor } from '@/auth/interceptor/token.interceptor';
+import { Public } from '@/auth/decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('signup')
   signUp(@Body() createAuthDto: CreateAuthDto) {
     return this.authService.createUser(createAuthDto);
   }
 
+  @Public()
   @UseGuards(LocalAuthGuard)
   @UseInterceptors(TokenInterceptor)
   @Post('signin')
@@ -38,6 +40,7 @@ export class AuthController {
     return this.authService.signIn(user.id, user.name);
   }
 
+  @Public()
   @UseGuards(RefreshAuthGuard)
   @UseInterceptors(TokenInterceptor)
   @Post('refresh')
@@ -46,7 +49,6 @@ export class AuthController {
     return this.authService.refreshToken(user.id, user.name);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('me')
   async getMe(@GetUser() user: any) {
     return {
@@ -56,7 +58,6 @@ export class AuthController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post('signout')
   async signOut(
     @GetUser('id') userId: number,
