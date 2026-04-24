@@ -12,7 +12,7 @@ import { Auth } from '@/auth/entities/auth.entity';
 import { DataSource, Repository } from 'typeorm';
 import { UserService } from '@/user/user.service';
 import { hash, verify } from 'argon2';
-import { User } from '@/user/entities/user.entity';
+import { Role, User } from '@/user/entities/user.entity';
 import { AuthJwtPayload } from '@/auth/types/auth-jwt-payload';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
@@ -72,16 +72,22 @@ export class AuthService {
     if (!isPasswordMatched) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    // * else return return user id, name, role */
     const { user } = authRecord;
     return {
       id: user.id,
       name: user.userName,
+      email: user.email,
+      role: user.role,
     };
   }
 
-  async signIn(userId: number, name: string) {
-    const { accessToken, refreshToken } = await this.generateTokens(userId);
+  async signIn(userId: number, name: string, email: string, role: Role) {
+    const { accessToken, refreshToken } = await this.generateTokens(
+      userId,
+      name,
+      email,
+      role,
+    );
     const hashedRefreshToken = await hash(refreshToken);
     const result = await this.authRepository.update(
       {
@@ -112,8 +118,13 @@ export class AuthService {
     );
   }
 
-  async generateTokens(userId: number) {
-    const payload: AuthJwtPayload = { sub: userId };
+  async generateTokens(
+    userId: number,
+    name: string,
+    email: string,
+    role: Role,
+  ) {
+    const payload: AuthJwtPayload = { sub: userId, name, email, role };
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload),
       this.jwtService.signAsync(payload, this.refreshTokenConfig),
@@ -125,8 +136,13 @@ export class AuthService {
     };
   }
 
-  async refreshToken(userId: number, name: string) {
-    const { accessToken, refreshToken } = await this.generateTokens(userId);
+  async refreshToken(userId: number, name: string, email: string, role: Role) {
+    const { accessToken, refreshToken } = await this.generateTokens(
+      userId,
+      name,
+      email,
+      role,
+    );
     const hashedRefreshToken = await hash(refreshToken);
     const result = await this.authRepository.update(
       {
@@ -149,15 +165,12 @@ export class AuthService {
     };
   }
 
-  async validateJwtUser(userId: number) {
-    const user = await this.userService.findOne(userId);
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
+  async validateJwtUser(payload: AuthJwtPayload) {
     const currentUser = {
-      id: user.id,
-      name: user.userName,
-      email: user.email,
+      id: payload.sub,
+      name: payload.name,
+      email: payload.email,
+      role: payload.role,
     };
 
     return currentUser;
@@ -190,6 +203,7 @@ export class AuthService {
       id: user.id,
       name: user.userName,
       email: user.email,
+      role: user.role,
     };
   }
 

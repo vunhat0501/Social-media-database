@@ -14,7 +14,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-enum Role {
+export enum Role {
   ADMIN = 'admin',
   USER = 'user',
 }
