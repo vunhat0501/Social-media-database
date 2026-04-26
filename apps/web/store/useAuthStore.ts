@@ -1,15 +1,10 @@
 import { signOut as authSignOut } from '@/app/auth/lib/auth';
 import { api } from '@/lib/api';
 import { create } from 'zustand';
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-}
+import { AuthenticatedUser } from '@workspace/types';
 
 interface AuthState {
-  user: User | null;
+  user: AuthenticatedUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
 

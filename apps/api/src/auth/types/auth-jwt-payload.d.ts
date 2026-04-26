@@ -1,4 +1,4 @@
-import { Role } from '@/user/entities/user.entity';
+import { Role } from '@workspace/types';
 
 export type AuthJwtPayload = {
   sub: number;

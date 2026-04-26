@@ -20,7 +20,7 @@ import { GetUser } from '@/auth/decorators/get-user.decorator';
 import { RefreshAuthGuard } from '@/auth/guards/refresh-auth/refresh-auth.guard';
 import { TokenInterceptor } from '@/auth/interceptor/token.interceptor';
 import { Public } from '@/auth/decorators/public.decorator';
-import { Role } from '@/user/entities/user.entity';
+import { AuthenticatedUser } from '@workspace/types';
 
 @Controller('auth')
 export class AuthController {
@@ -37,12 +37,7 @@ export class AuthController {
   @UseInterceptors(TokenInterceptor)
   @Post('signin')
   async signIn(@Req() req: Request) {
-    const user = req.user as {
-      id: number;
-      name: string;
-      email: string;
-      role: Role;
-    };
+    const user = req.user as AuthenticatedUser;
     return this.authService.signIn(user.id, user.name, user.email, user.role);
   }
 
@@ -51,12 +46,7 @@ export class AuthController {
   @UseInterceptors(TokenInterceptor)
   @Post('refresh')
   async refreshToken(@Req() req: Request) {
-    const user = req.user as {
-      id: number;
-      name: string;
-      email: string;
-      role: Role;
-    };
+    const user = req.user as AuthenticatedUser;
     return this.authService.refreshToken(
       user.id,
       user.name,
@@ -66,7 +56,7 @@ export class AuthController {
   }
 
   @Get('me')
-  async getMe(@GetUser() user: any) {
+  async getMe(@GetUser() user: AuthenticatedUser) {
     return {
       id: user.id,
       name: user.name,

@@ -5,7 +5,8 @@
     "baseUrl": "./",
     "outDir": "./dist",
     "paths": {
-      "@/*": ["./src/*"]
+      "@workspace/types": ["../../packages/types/dist/index.d.ts"],
+      "@/*": ["src/*"]
     }
   }
 }

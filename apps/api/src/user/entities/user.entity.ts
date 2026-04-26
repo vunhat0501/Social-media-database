@@ -5,6 +5,7 @@ import { Comment } from '@/social/entities/comment.entity';
 import { Follow } from '@/social/entities/follow.entity';
 import { Like } from '@/social/entities/like.entity';
 import { Story } from '@/stories/entities/story.entity';
+import { Role } from '@workspace/types';
 import {
   Column,
   CreateDateColumn,
@@ -13,11 +14,6 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-
-export enum Role {
-  ADMIN = 'admin',
-  USER = 'user',
-}
 
 @Entity('users')
 export class User {

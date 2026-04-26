@@ -1,5 +1,5 @@
 import { ROLES_KEY } from '@/auth/decorators/roles.decorator';
-import { Role } from '@/user/entities/user.entity';
+import { Role } from '@workspace/types';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';

@@ -162,6 +162,9 @@ importers:
       '@workspace/jest-config':
         specifier: workspace:*
         version: link:../../packages/jest-config
+      '@workspace/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@workspace/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -274,6 +277,9 @@ importers:
       '@workspace/jest-config':
         specifier: workspace:*
         version: link:../../packages/jest-config
+      '@workspace/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@workspace/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -345,6 +351,12 @@ importers:
         version: 16.1.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       typescript:
         specifier: 5.9.3
+        version: 5.9.3
+
+  packages/types:
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
         version: 5.9.3
 
   packages/typescript-config: {}

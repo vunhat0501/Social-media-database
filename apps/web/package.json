@@ -37,6 +37,7 @@
     "@workspace/eslint-config": "workspace:^",
     "@workspace/jest-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
+    "@workspace/types": "workspace:*",
     "eslint": "catalog:",
     "jest": "catalog:",
     "jest-environment-jsdom": "^30.2.0",

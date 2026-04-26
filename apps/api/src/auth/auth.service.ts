@@ -12,7 +12,8 @@ import { Auth } from '@/auth/entities/auth.entity';
 import { DataSource, Repository } from 'typeorm';
 import { UserService } from '@/user/user.service';
 import { hash, verify } from 'argon2';
-import { Role, User } from '@/user/entities/user.entity';
+import { User } from '@/user/entities/user.entity';
+import { AuthenticatedUser, Role } from '@workspace/types';
 import { AuthJwtPayload } from '@/auth/types/auth-jwt-payload';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
@@ -54,7 +55,10 @@ export class AuthService {
     });
   }
 
-  async validateLocalUser(email: string, password: string) {
+  async validateLocalUser(
+    email: string,
+    password: string,
+  ): Promise<AuthenticatedUser> {
     const authRecord = await this.authRepository.findOne({
       where: {
         authProvider: 'local',
@@ -165,18 +169,21 @@ export class AuthService {
     };
   }
 
-  async validateJwtUser(payload: AuthJwtPayload) {
-    const currentUser = {
+  async validateJwtUser(payload: AuthJwtPayload): Promise<AuthenticatedUser> {
+    const currentUser: AuthenticatedUser = {
       id: payload.sub,
       name: payload.name,
       email: payload.email,
-      role: payload.role,
+      role: payload.role as Role,
     };
 
     return currentUser;
   }
 
-  async validateRefreshToken(userId: number, refreshToken: string) {
+  async validateRefreshToken(
+    userId: number,
+    refreshToken: string,
+  ): Promise<AuthenticatedUser> {
     const authRecord = await this.authRepository.findOne({
       where: {
         authProvider: 'local',
