@@ -3,7 +3,7 @@ import { registerAs } from '@nestjs/config';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 
 export default registerAs(
-  'database',
+  'postgres',
   (): PostgresConnectionOptions => ({
     type: 'postgres',
     url: env.DATABASE_URL,

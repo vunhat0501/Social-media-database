@@ -1,4 +1,4 @@
-import dbConfig from '@/config/db.config';
+import postgresConfig from '@/config/postgres.config';
 import { Logger, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -6,12 +6,12 @@ import { DataSource } from 'typeorm';
 
 @Module({
   imports: [
-    ConfigModule.forFeature(dbConfig),
+    ConfigModule.forFeature(postgresConfig),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        ...configService.get('database'),
+        ...configService.get('postgres'),
         autoLoadEntities: true,
       }),
     }),
