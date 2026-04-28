@@ -176,7 +176,7 @@ pnpm build --filter @workspace/types
 1. We will need to add the path to types package so that nestjs can find it and compile it to javascript.
 
 ```json
-"@workspace/types": ["../../packages/types/dist/index.d.ts"],
+"@workspace/types": ["../../packages/types"],
 ```
 
 5. For nextjs, we will simply add `'@workspace/types'
