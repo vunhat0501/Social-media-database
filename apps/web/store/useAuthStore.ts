@@ -16,6 +16,7 @@ interface AuthState {
   signIn: (credentials: any) => Promise<void>;
   signOut: () => Promise<void>;
   checkSession: () => Promise<void>;
+  deleteAccount: (userId: number) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -69,6 +70,21 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
     } catch (error) {
       set({ user: null, isAuthenticated: false, isLoading: false });
+    }
+  },
+
+  deleteAccount: async (userId: number) => {
+    try {
+      await api.delete(`/users/${userId}`);
+      await authSignOut();
+
+      set({ user: null, isAuthenticated: false, isLoading: false });
+      if (typeof window !== 'undefined') {
+        window.location.href = '/auth/signin';
+      }
+    } catch (error) {
+      console.error('Account deletion error:', error);
+      throw error;
     }
   },
 }));

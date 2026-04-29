@@ -9,6 +9,7 @@ import { Role } from '@workspace/types';
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   Index,
   OneToMany,
@@ -38,6 +39,9 @@ export class User {
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
+
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
+  deletedAt: Date;
 
   @OneToMany(() => Auth, (auth) => auth.user)
   auths: Auth[];

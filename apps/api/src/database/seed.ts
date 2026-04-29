@@ -13,7 +13,6 @@ const seedDataSource = new DataSource({
 seedDataSource
   .initialize()
   .then(async () => {
-    await seedDataSource.synchronize(true);
     console.log('Database connected!');
     console.log('Seeding database...');
     await runSeeders(seedDataSource, {

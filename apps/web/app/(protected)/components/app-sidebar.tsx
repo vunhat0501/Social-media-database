@@ -141,7 +141,7 @@ export function AppSidebar() {
               >
                 <DropdownMenuItem className="cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
-                  Account Settings
+                  <a href="/account-settings">Account Settings</a>
                 </DropdownMenuItem>
 
                 {/* Attach the onClick handler here! 

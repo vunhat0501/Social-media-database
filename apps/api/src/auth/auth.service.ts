@@ -44,14 +44,14 @@ export class AuthService {
         userName: createAuthDto.userName,
         email: createAuthDto.email,
       });
-      const savedUser = await transactionalEntityManager.save(newUser);
+      const savedUser = await transactionalEntityManager.save(User, newUser);
       const newAuth = transactionalEntityManager.create(Auth, {
         hashedPassword,
         authProvider: 'local',
         user: savedUser,
       });
 
-      return transactionalEntityManager.save(newAuth);
+      return transactionalEntityManager.save(Auth, newAuth);
     });
   }
 
