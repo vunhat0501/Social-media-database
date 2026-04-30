@@ -42,7 +42,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   signIn: async (credentials) => {
     try {
       const response = await api.post('/auth/signin', credentials);
-      const userData = response.data;
+      const userData = response.data.data;
       set({ user: userData, isAuthenticated: true, isLoading: false });
     } catch (error) {
       console.error('Login error:', error);

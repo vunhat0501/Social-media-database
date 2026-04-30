@@ -9,3 +9,13 @@ export interface AuthenticatedUser {
   email: string;
   role: Role;
 }
+
+export interface ProfileData {
+  id: number;
+  userName: string;
+  email: string;
+  role: Role;
+  avatarUrl: string;
+  bio: string;
+  createdAt: Date;
+}

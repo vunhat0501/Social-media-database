@@ -110,6 +110,8 @@ export class AuthService {
     return {
       id: userId,
       name,
+      email,
+      role,
       accessToken,
       refreshToken,
     };
@@ -164,6 +166,8 @@ export class AuthService {
     return {
       id: userId,
       name,
+      email,
+      role,
       accessToken,
       refreshToken,
     };

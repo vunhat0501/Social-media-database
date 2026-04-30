@@ -35,12 +35,6 @@ import {
 } from '@workspace/ui/components/avatar';
 import { useAuthStore } from '@/store/useAuthStore';
 
-const navItems = [
-  { title: 'For You', url: '/fyp', icon: Sparkles },
-  { title: 'Explore', url: '/explore', icon: Hash },
-  { title: 'Profile', url: '/profile', icon: UserIcon },
-];
-
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -50,6 +44,16 @@ export function AppSidebar() {
     await signOut();
     router.push('/auth/signin');
   };
+
+  const navItems = [
+    { title: 'For You', url: '/fyp', icon: Sparkles },
+    { title: 'Explore', url: '/explore', icon: Hash },
+    {
+      title: 'Profile',
+      url: user?.name ? `/profile/${user.name}` : '/profile',
+      icon: UserIcon,
+    },
+  ];
 
   return (
     <Sidebar variant="inset">
