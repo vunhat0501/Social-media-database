@@ -1,4 +1,4 @@
-'use client'; // Required for usePathname
+'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -34,11 +34,20 @@ import {
   AvatarImage,
 } from '@workspace/ui/components/avatar';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useEffect, useState } from 'react';
 
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
   const { user, signOut } = useAuthStore();
+
+  useEffect(() => {
+    //** since we are using nextjs hydration (create skeleton then mounted it),
+    // * double render here is fine */
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsMounted(true);
+  }, []);
 
   const handleLogout = async () => {
     await signOut();
@@ -50,7 +59,7 @@ export function AppSidebar() {
     { title: 'Explore', url: '/explore', icon: Hash },
     {
       title: 'Profile',
-      url: user?.name ? `/profile/${user.name}` : '/profile',
+      url: isMounted && user?.name ? `/profile/${user.name}` : '/profile',
       icon: UserIcon,
     },
   ];
@@ -106,34 +115,33 @@ export function AppSidebar() {
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
-                    {/* Optional: You can make the src dynamic if your user object has an avatar URL later */}
                     <AvatarImage
                       src="/avatars/shadcn.jpg"
-                      alt={user?.name || 'User Avatar'}
+                      alt={(isMounted && user?.name) || 'User Avatar'}
                     />
                     <AvatarFallback className="rounded-lg">
-                      {/* Grabs the first two letters of their name, or defaults to "U" */}
-                      {user?.name?.substring(0, 2).toUpperCase() || 'U'}
+                      {(isMounted &&
+                        user?.name?.substring(0, 2).toUpperCase()) ||
+                        'U'}
                     </AvatarFallback>
                   </Avatar>
-                  {/* TODO: Use real user data */}
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    {user ? (
+                  <span className="grid flex-1 text-left text-sm leading-tight">
+                    {isMounted && user ? (
                       <>
-                        <span className="truncate font-semibold">
+                        <span className="block truncate font-semibold">
                           {user.name}
                         </span>
-                        <span className="truncate text-xs text-muted-foreground">
+                        <span className="block truncate text-xs text-muted-foreground">
                           {user.email}
                         </span>
                       </>
                     ) : (
-                      <div className="space-y-2">
-                        <div className="h-3 w-24 animate-pulse rounded bg-muted" />
-                        <div className="h-2 w-32 animate-pulse rounded bg-muted" />
-                      </div>
+                      <span className="block space-y-2">
+                        <span className="block h-3 w-24 animate-pulse rounded bg-muted" />
+                        <span className="block h-2 w-32 animate-pulse rounded bg-muted" />
+                      </span>
                     )}
-                  </div>
+                  </span>
                   <ChevronsUpDown className="ml-auto h-4 w-4" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
@@ -147,10 +155,6 @@ export function AppSidebar() {
                   <Settings className="mr-2 h-4 w-4" />
                   <a href="/account-settings">Account Settings</a>
                 </DropdownMenuItem>
-
-                {/* Attach the onClick handler here! 
-                  Added cursor-pointer so it feels like a real button 
-                */}
                 <DropdownMenuItem
                   onClick={handleLogout}
                   className="text-red-500 focus:text-red-500 focus:bg-red-50 dark:focus:bg-red-950 cursor-pointer"
