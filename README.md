@@ -22,7 +22,14 @@ This template provides a robust monorepo foundation featuring a **[Next.js](http
 
 ## A Few Notes Before Diving In
 
-This README focuses on how to set up a Turborepo workspace with NestJS and how to configure shared utilities. If you are only interested in using this project template as-is, you can skip this section.
+This README focuses on how to set up a Turborepo workspace with NestJS and how to configure shared utilities. If you are only interested in using this project template as-is, you can skip this section and just run these commands:
+
+```bash
+pnpm build --filter @workspace/jest-config
+pnpm build --filter @workspace/types
+```
+
+**Note:** For the best development experience for the types package, you will need to build it every time you add new enum.
 
 This project uses **[pnpm](https://pnpm.io/)** as its package manager. Turborepo highly recommends using pnpm in monorepos to optimize disk space and dependency resolution. Please follow the [installation guide](https://pnpm.io/installation) before proceeding.
 
