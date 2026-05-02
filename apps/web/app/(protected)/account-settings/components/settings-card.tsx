@@ -26,27 +26,23 @@ import { useAuthStore } from '@/store/useAuthStore';
 
 export const SettingsCard = () => {
   const [isDeleting, setIsDeleting] = useState(false);
-
-  // Pull the user and the new delete method from your Zustand store
   const { user, deleteAccount } = useAuthStore();
 
   const handleDeleteAccount = async () => {
-    if (!user?.id) return; // Guard clause
+    if (!user?.id) return;
 
     setIsDeleting(true);
     try {
       await deleteAccount(user.id);
-      // No need to redirect manually here, authSignOut() inside the store handles it
     } catch (error) {
       console.error('Error deleting account:', error);
-      // Optional: Add a toast notification here
-      setIsDeleting(false); // Only reset on error, success redirects away
+      //TODO: Add a toast notification here
+      setIsDeleting(false);
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Profile Form Component */}
       <Card>
         <CardHeader>
           <CardTitle>Profile Information</CardTitle>
@@ -63,8 +59,6 @@ export const SettingsCard = () => {
           <Button>Save Changes</Button>
         </CardFooter>
       </Card>
-
-      {/* Danger Zone Component */}
       <Card className="border-destructive/50 bg-destructive/5">
         <CardHeader>
           <CardTitle className="text-destructive flex items-center gap-2">

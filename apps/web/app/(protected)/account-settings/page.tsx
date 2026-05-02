@@ -1,5 +1,3 @@
-'use client';
-
 import { SettingsCard } from '@/app/(protected)/account-settings/components/settings-card';
 import React from 'react';
 
