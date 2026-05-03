@@ -45,13 +45,30 @@ export class MainSeeder implements Seeder {
     const authFactory = this.factoryManager.get(Auth);
     const storyFactory = this.factoryManager.get(Story);
 
-    this.users = await userFactory.saveMany(100);
+    // Users can still be bulk saved via the factory
+    this.users = await userFactory.saveMany(1000);
+
+    const authsToInsert = [];
+    const storiesToInsert = [];
+
     for (const user of this.users) {
-      await authFactory.save({ user });
+      // Create entities in memory using .make() instead of .save()
+      const auth = await authFactory.make({ user });
+      authsToInsert.push(auth);
+
       if (faker.datatype.boolean({ probability: 0.3 })) {
-        await storyFactory.save({ user });
+        const story = await storyFactory.make({ user });
+        storiesToInsert.push(story);
       }
     }
+
+    // Bulk Insert
+    await this.dataSource
+      .getRepository(Auth)
+      .save(authsToInsert, { chunk: 100 });
+    await this.dataSource
+      .getRepository(Story)
+      .save(storiesToInsert, { chunk: 100 });
   }
 
   private async seedHashTags() {
@@ -67,9 +84,11 @@ export class MainSeeder implements Seeder {
     const postFactory = this.factoryManager.get(Post);
     const postMediaFactory = this.factoryManager.get(PostMedia);
     const postRepo = this.dataSource.getRepository(Post);
+    const postMediaRepo = this.dataSource.getRepository(PostMedia);
 
+    // Bulk make and save posts
     const posts = await Promise.all(
-      Array(100)
+      Array(10000)
         .fill('')
         .map(() =>
           postFactory.make({ user: faker.helpers.arrayElement(this.users) }),
@@ -77,63 +96,90 @@ export class MainSeeder implements Seeder {
     );
     this.savedPosts = await postRepo.save(posts);
 
-    //** Add 1-3 images to every single post (Carousels) */
+    const mediaToInsert = [];
+
+    // Add 1-5 images to every single post (Carousels)
     for (const post of this.savedPosts) {
       const numMedia = faker.number.int({ min: 1, max: 5 });
       for (let i = 0; i < numMedia; i++) {
-        await postMediaFactory.save({
+        const media = await postMediaFactory.make({
           post,
           sequenceOrder: i + 1,
         });
+        mediaToInsert.push(media);
       }
     }
+
+    // Bulk Insert Media
+    await postMediaRepo.save(mediaToInsert, { chunk: 100 });
   }
 
   private async seedInteractions() {
-    console.log('Seeding comments, likes, and follows...');
+    console.log('Seeding tags, comments, likes, and bookmarks...');
 
     const postHashtagRepo = this.dataSource.getRepository(PostHashtag);
-    const commentFactory = this.factoryManager.get(Comment);
     const likeRepo = this.dataSource.getRepository(Like);
-    const savesPost = this.dataSource.getRepository(SavedPost);
+    const savesPostRepo = this.dataSource.getRepository(SavedPost);
+    const commentRepo = this.dataSource.getRepository(Comment);
+    const commentFactory = this.factoryManager.get(Comment);
+
+    const hashtagsToInsert = [];
+    const commentsToInsert = [];
+    const likesToInsert = [];
+    const savesToInsert = [];
 
     for (const post of this.savedPosts) {
       //** tag */
       const numTags = faker.number.int({ min: 1, max: 3 });
       const randomTags = faker.helpers.arrayElements(this.hashtags, numTags);
-      for (const tag of randomTags) {
-        await postHashtagRepo.save({ postId: post.id, hashtagId: tag.id });
+      const uniqueTagIds = [...new Set(randomTags.map((t) => t.id))]; // Prevent duplicate tags
+
+      for (const tagId of uniqueTagIds) {
+        hashtagsToInsert.push({ postId: post.id, hashtagId: tagId });
       }
 
       //** comment */
       const numComments = faker.number.int({ min: 0, max: 5 });
       for (let i = 0; i < numComments; i++) {
-        await commentFactory.save({
+        const comment = await commentFactory.make({
           user: faker.helpers.arrayElement(this.users),
           post,
         });
+        commentsToInsert.push(comment);
       }
 
       //** like */
       const numLikes = faker.number.int({ min: 2, max: 10 });
       const randomLikers = faker.helpers.arrayElements(this.users, numLikes);
-      for (const liker of randomLikers) {
-        await likeRepo.save({ postId: post.id, userId: liker.id });
+      const uniqueLikerIds = [...new Set(randomLikers.map((u) => u.id))]; // Prevent duplicate likes
+
+      for (const likerId of uniqueLikerIds) {
+        likesToInsert.push({ postId: post.id, userId: likerId });
       }
 
       //** bookmark */
       const numSaves = faker.number.int({ min: 0, max: 5 });
       const randomSavers = faker.helpers.arrayElements(this.users, numSaves);
-      for (const saver of randomSavers) {
-        await savesPost.save({ postId: post.id, userId: saver.id });
+      const uniqueSaverIds = [...new Set(randomSavers.map((u) => u.id))]; // Prevent duplicate saves
+
+      for (const saverId of uniqueSaverIds) {
+        savesToInsert.push({ postId: post.id, userId: saverId });
       }
     }
+
+    // Bulk Inserts
+    await postHashtagRepo.save(hashtagsToInsert, { chunk: 100 });
+    await commentRepo.save(commentsToInsert, { chunk: 100 });
+    await likeRepo.save(likesToInsert, { chunk: 100 });
+    await savesPostRepo.save(savesToInsert, { chunk: 100 });
   }
 
   private async seedFollows() {
     console.log('Seeding follows...');
 
     const followRepo = this.dataSource.getRepository(Follow);
+    const followsToInsert = [];
+
     for (const user of this.users) {
       const numFollowers = faker.number.int({ min: 0, max: 5 });
       const otherUsers = this.users.filter((u) => u.id !== user.id);
@@ -142,12 +188,17 @@ export class MainSeeder implements Seeder {
         numFollowers,
       );
 
-      for (const follower of usersToFollow) {
-        await followRepo.save({
-          followingUser: user,
-          followedUser: follower,
+      const uniqueFollowerIds = [...new Set(usersToFollow.map((u) => u.id))]; // Prevent duplicate follows
+
+      for (const followerId of uniqueFollowerIds) {
+        followsToInsert.push({
+          followingUserId: user.id,
+          followedUserId: followerId,
         });
       }
     }
+
+    // Bulk Insert
+    await followRepo.save(followsToInsert, { chunk: 100 });
   }
 }

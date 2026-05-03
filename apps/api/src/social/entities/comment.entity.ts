@@ -4,12 +4,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
 @Entity('comments')
+@Index('idx_post_comments_sort', ['post', 'createdAt'])
 export class Comment {
   @PrimaryGeneratedColumn('increment')
   id: number;
@@ -20,6 +22,7 @@ export class Comment {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
+  @Index()
   @ManyToOne(() => User, (user) => user.comments, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;

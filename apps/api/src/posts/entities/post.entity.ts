@@ -8,12 +8,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
+@Index('idx_user_post_timeline', ['user', 'createdAt'])
 @Entity('posts')
 export class Post {
   @PrimaryGeneratedColumn('increment')
@@ -31,6 +33,7 @@ export class Post {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
+  @Index()
   @ManyToOne(() => User, (user) => user.posts, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;

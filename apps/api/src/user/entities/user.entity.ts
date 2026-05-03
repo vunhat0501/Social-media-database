@@ -17,6 +17,9 @@ import {
 } from 'typeorm';
 
 @Entity('users')
+@Index('idx_active_users_username', ['userName'], {
+  where: 'deleted_at IS NULL',
+})
 export class User {
   @PrimaryGeneratedColumn('increment')
   id: number;
@@ -25,6 +28,7 @@ export class User {
   @Column({ name: 'user_name', unique: true })
   userName: string;
 
+  @Index()
   @Column({ unique: true })
   email: string;
 

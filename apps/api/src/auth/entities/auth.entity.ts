@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -28,12 +29,14 @@ export class Auth {
   @Column({ name: 'email_verified', default: false })
   emailVerified: boolean;
 
+  @Index({ unique: true })
   @Column({ name: 'refresh_token', nullable: true })
   refreshToken: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
+  @Index()
   @ManyToOne(() => User, (user) => user.auths, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
