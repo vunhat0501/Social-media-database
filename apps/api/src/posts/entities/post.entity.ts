@@ -7,15 +7,19 @@ import { User } from '@/user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
-@Index('idx_user_post_timeline', ['user', 'createdAt'])
+@Index('idx_user_post_timeline', ['user', 'createdAt'], {
+  where: 'deleted_at IS NULL',
+})
 @Entity('posts')
 export class Post {
   @PrimaryGeneratedColumn('increment')
@@ -32,6 +36,12 @@ export class Post {
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date;
+
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
+  deletedAt: Date;
 
   @Index()
   @ManyToOne(() => User, (user) => user.posts, { onDelete: 'CASCADE' })
