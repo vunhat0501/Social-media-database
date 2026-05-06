@@ -90,19 +90,21 @@ export class PostsService {
     }
   }
 
-  findAll() {
+  findAll(page: number = 1, limit: number = 20) {
     return this.postsRepository.find({
-      relations: ['user', 'media', 'comments', 'comments.user', 'likes', 'hashtags', 'hashtags.hashtag'],
+      relations: ['user', 'media', 'comments', 'comments.user', 'likes'],
       order: {
         createdAt: 'DESC',
       },
+      take: limit,
+      skip: (page - 1) * limit,
     });
   }
 
   async findOne(id: number) {
     const post = await this.postsRepository.findOne({
       where: { id },
-      relations: ['user', 'media', 'comments', 'comments.user', 'likes', 'hashtags', 'hashtags.hashtag'],
+      relations: ['user', 'media', 'comments', 'comments.user', 'likes'],
       order: {
         media: {
           sequenceOrder: 'ASC',
