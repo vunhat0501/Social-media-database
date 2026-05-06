@@ -12,6 +12,7 @@ This template provides a robust monorepo foundation featuring a **[Next.js](http
   - [🧪 Configuring Jest Testing](#-configuring-jest-testing)
     - [🚨 The Problem It Solves](#-the-problem-it-solves)
     - [📁 File Breakdown](#-file-breakdown)
+  - [Shared types package](#shared-types-package)
   - [🧩 UI Components (shadcn/ui)](#-ui-components-shadcnui)
     - [Tailwind Configuration](#tailwind-configuration)
     - [Adding New Components](#adding-new-components)
@@ -21,7 +22,14 @@ This template provides a robust monorepo foundation featuring a **[Next.js](http
 
 ## A Few Notes Before Diving In
 
-This README focuses on how to set up a Turborepo workspace with NestJS and how to configure shared utilities. If you are only interested in using this project template as-is, you can skip this section.
+This README focuses on how to set up a Turborepo workspace with NestJS and how to configure shared utilities. If you are only interested in using this project template as-is, you can skip this section and just run these commands:
+
+```bash
+pnpm build --filter @workspace/jest-config
+pnpm build --filter @workspace/types
+```
+
+**Note:** For the best development experience for the types package, you will need to build it every time you add new enum.
 
 This project uses **[pnpm](https://pnpm.io/)** as its package manager. Turborepo highly recommends using pnpm in monorepos to optimize disk space and dependency resolution. Please follow the [installation guide](https://pnpm.io/installation) before proceeding.
 
@@ -36,6 +44,10 @@ npm install -g @nestjs/cli
 ## Creating a Monorepo with shadcn/ui Built-In
 
 The base of this project was generated using the shadcn/ui CLI. You can find more details on their official [monorepo setup](https://ui.shadcn.com/docs/monorepo).
+
+```bash
+pnpm dlx shadcn@latest init --monorepo
+```
 
 ---
 
@@ -82,17 +94,39 @@ This monorepo uses a centralized testing configuration strategy to keep frontend
 **Setup Steps:**
 
 1. Create a `package.json` in `packages/jest-config` with `typescript`, `next`, and `jest` as `devDependencies`. This file dictates how your Jest rules are exported to the rest of the workspace.
-2. Create a `src/base.ts` file. This turns on code coverage, configures the V8 engine for faster tracking, and sets the default test environment to `jsdom`.
-3. Create a `src/nest.ts` file. This overrides the base config to use a `node` environment (since APIs do not run in browsers), targets `.spec.ts` files, and wires up `ts-jest`.
-4. Create a `src/next.ts` file. This extends `base.ts` by wrapping it in `next/jest`, appending React-specific file extensions (`jsx`, `tsx`), and injecting the setup file via `setupFilesAfterEnv: ['<rootDir>/jest.setup.ts']`.
-5. Run the following command from the root to install DOM testing utilities for the frontend:
+2. Create a tsconfig that extend and overwrite some rule of base.json.
+
+```typescript
+{
+  "extends": "@workspace/typescript-config/base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "incremental": false,
+    "module": "commonjs",
+    "moduleResolution": "Node10",
+    "outDir": "dist",
+    "baseUrl": "src",
+    "strictNullChecks": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+}
+```
+
+3. Create a `src/base.ts` file. This turns on code coverage, configures the V8 engine for faster tracking, and sets the default test environment to `jsdom`.
+4. Create a `src/nest.ts` file. This overrides the base config to use a `node` environment (since APIs do not run in browsers), targets `.spec.ts` files, and wires up `ts-jest`.
+5. Create a `src/next.ts` file. This extends `base.ts` by wrapping it in `next/jest`, appending React-specific file extensions (`jsx`, `tsx`), and injecting the setup file via `setupFilesAfterEnv: ['<rootDir>/jest.setup.ts']`.
+6. Run the following command from the root to install DOM testing utilities for the frontend:
 
    ```bash
    pnpm add -D jest jest-environment-jsdom @testing-library/react @testing-library/dom @testing-library/jest-dom @types/jest --filter web
    ```
 
-6. In your `web` app, create a `jest.setup.ts` file and a `__tests__` folder. Import `@testing-library/jest-dom` inside `jest.setup.ts` so it is globally available to all tests.
-7. Update your frontend `tsconfig.json` to include `"types": ["jest"]`, and add `jest.setup.ts` and the `__tests__` folder to the `include` array. _(Note: As mentioned in the Next.js docs, be mindful of naming collisions with the `Config` type)._
+7. In your `web` app, create a `jest.setup.ts` file and a `__tests__` folder. Import `@testing-library/jest-dom` inside `jest.setup.ts` so it is globally available to all tests.
+8. Update your frontend `tsconfig.json` to include `"types": ["jest"]`, and add `jest.setup.ts` and the `__tests__` folder to the `include` array. _(Note: As mentioned in the Next.js docs, be mindful of naming collisions with the `Config` type)._
 
 - You also want to add these script to your web package.json `"test": "jest", "test:watch": "jest --watch"`
 
@@ -125,6 +159,35 @@ pnpm build --filter @workspace/jest-config
 - **`base.ts` (The Foundation):** Defines the generic rules. Turns on code coverage, sets the V8 coverage provider, and establishes `jsdom` as the default environment.
 - **`nest.ts` (The Backend Config):** Overwrites the base to use a `node` environment and wires up `ts-jest` to compile NestJS decorators properly.
 - **`next.ts` (The Frontend Config):** Wraps the base config in `next/jest`, allowing Next.js to automatically handle path aliases, SWC compilation, and `.env` loading before tests run.
+
+---
+
+## Shared types package
+
+Quite similar to jest package except easier
+
+1. Create type package with typescript as dev dependency and add these two lines
+
+```json
+"main": "./dist/index.js",
+"types": "./dist/index.d.ts",
+```
+
+2. Create a similar tsconfig file as jest's package.
+3. Build types package. **Note:** You can also add `tsc -w` to run as dev server without having to rebuild the package every time you change something
+
+```bash
+pnpm build --filter @workspace/types
+```
+
+1. We will need to add the path to types package so that nestjs can find it and compile it to javascript.
+
+```json
+"@workspace/types": ["../../packages/types"],
+```
+
+5. For nextjs, we will simply add `'@workspace/types'
+` to transpilePackages array.
 
 ---
 

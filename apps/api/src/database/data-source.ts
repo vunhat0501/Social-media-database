@@ -14,9 +14,9 @@ const options: DataSourceOptions & SeederOptions = {
   database: env.DB_NAME,
 
   entities: [join(__dirname, '../**/*.entity{.ts,.js}')],
-  migrations: [join(__dirname, './migrations/*{.ts,.js}')],
+  migrations: [join(__dirname, './migrations/postgres/*{.ts,.js}')],
   factories: ['src/database/factories/*{.ts,.js}'],
-  seeds: ['src/database/seeds/*{.ts,.js}'],
+  // seeds: ['src/database/seeds/postgres.seeder{.ts,.js}'],
 
   //! DO NOT set synchronize to true in production
   synchronize: false,

@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 
 @Entity('stories')
+@Index('idx_user_stories_active', ['user', 'expiresAt'])
 export class Story {
   @PrimaryGeneratedColumn('increment')
   id: number;
@@ -17,7 +18,6 @@ export class Story {
   @Column({ name: 'media_url' })
   mediaUrl: string;
 
-  @Index()
   @Column({ name: 'expires_at' })
   expiresAt: Date;
 

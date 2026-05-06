@@ -1,5 +1,3 @@
-# Command structure
-
 `npx -y tree-cli -l 9 --ignore "node_modules,.git,dist,.next,.swc,build,.turbo" -o structure.md`
 
 ```markdown
@@ -41,6 +39,8 @@
 | | | | | └── refresh-auth
 | | | | | ├── refresh-auth.guard.spec.ts
 | | | | | └── refresh-auth.guard.ts
+| | | | ├── interceptor
+| | | | | └── token.interceptor.ts
 | | | | ├── strategies
 | | | | | ├── jwt.strategy.ts
 | | | | | ├── local.strategy.ts
@@ -161,7 +161,7 @@
 | | | ├── lib
 | | | | ├── auth.ts
 | | | | └── type.ts
-| | | ├── login
+| | | ├── signin
 | | | | └── page.tsx
 | | | └── signup
 | | | └── page.tsx
@@ -273,7 +273,3 @@
 ├── tsconfig.json
 └── turbo.json
 ```
-
-directory: 131 file: 496 symboliclink: 121
-
-ignored: directory (8)

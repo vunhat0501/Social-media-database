@@ -1,4 +1,4 @@
-'use client'; // Required for usePathname
+'use client';
 
 import { usePathname, useRouter, useParams } from 'next/navigation'; // <-- Thêm useParams
 import {
@@ -36,27 +36,35 @@ import {
   AvatarImage,
 } from '@workspace/ui/components/avatar';
 import { useAuthStore } from '@/store/useAuthStore';
-
-// LƯU Ý: Đã xóa navItems ở đây và chuyển vào bên trong component
+import { useEffect, useState } from 'react';
 
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const params = useParams(); // <-- Lấy params từ URL hiện tại
-  const { user, logout } = useAuthStore();
+  const [isMounted, setIsMounted] = useState(false);
+  const { user, signOut } = useAuthStore();
 
-  // Chuyển navItems vào đây để có thể sử dụng params.id
-  // Nếu không có id trên URL, nó sẽ fallback về '/explore' mặc định
-  const navItems = [
-    { title: 'For You', url: '/fyp', icon: Sparkles },
-    { title: 'Explore', url: params?.id ? `/explore/${params.id}` : '/explore', icon: Hash },
-    { title: 'Profile', url: '/profile', icon: UserIcon },
-  ];
+  useEffect(() => {
+    //** since we are using nextjs hydration (create skeleton then mounted it),
+    // * double render here is fine */
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsMounted(true);
+  }, []);
 
   const handleLogout = async () => {
-    await logout();
-    router.push('/auth/login');
+    await signOut();
+    router.push('/auth/signin');
   };
+
+  const navItems = [
+    { title: 'For You', url: '/fyp', icon: Sparkles },
+    { title: 'Explore', url: '/explore', icon: Hash },
+    {
+      title: 'Profile',
+      url: isMounted && user?.name ? `/profile/${user.name}` : '/profile',
+      icon: UserIcon,
+    },
+  ];
 
   return (
     <Sidebar variant="inset">
@@ -127,29 +135,31 @@ export function AppSidebar() {
                   <Avatar className="h-8 w-8 rounded-lg">
                     <AvatarImage
                       src="/avatars/shadcn.jpg"
-                      alt={user?.name || 'User Avatar'}
+                      alt={(isMounted && user?.name) || 'User Avatar'}
                     />
                     <AvatarFallback className="rounded-lg">
-                      {user?.name?.substring(0, 2).toUpperCase() || 'U'}
+                      {(isMounted &&
+                        user?.name?.substring(0, 2).toUpperCase()) ||
+                        'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    {user ? (
+                  <span className="grid flex-1 text-left text-sm leading-tight">
+                    {isMounted && user ? (
                       <>
-                        <span className="truncate font-semibold">
+                        <span className="block truncate font-semibold">
                           {user.name}
                         </span>
-                        <span className="truncate text-xs text-muted-foreground">
+                        <span className="block truncate text-xs text-muted-foreground">
                           {user.email}
                         </span>
                       </>
                     ) : (
-                      <div className="space-y-2">
-                        <div className="h-3 w-24 animate-pulse rounded bg-muted" />
-                        <div className="h-2 w-32 animate-pulse rounded bg-muted" />
-                      </div>
+                      <span className="block space-y-2">
+                        <span className="block h-3 w-24 animate-pulse rounded bg-muted" />
+                        <span className="block h-2 w-32 animate-pulse rounded bg-muted" />
+                      </span>
                     )}
-                  </div>
+                  </span>
                   <ChevronsUpDown className="ml-auto h-4 w-4" />
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
@@ -161,9 +171,8 @@ export function AppSidebar() {
               >
                 <DropdownMenuItem className="cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
-                  Account Settings
+                  <a href="/account-settings">Account Settings</a>
                 </DropdownMenuItem>
-
                 <DropdownMenuItem
                   onClick={handleLogout}
                   className="text-red-500 focus:text-red-500 focus:bg-red-50 dark:focus:bg-red-950 cursor-pointer"

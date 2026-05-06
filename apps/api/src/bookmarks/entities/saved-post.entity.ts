@@ -3,16 +3,19 @@ import { User } from '@/user/entities/user.entity';
 import {
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryColumn,
 } from 'typeorm';
 
 @Entity('saved_posts')
+@Index('idx_user_saved_sort', ['user', 'createdAt'])
 export class SavedPost {
   @PrimaryColumn({ name: 'user_id' })
   userId: number;
 
+  @Index()
   @PrimaryColumn({ name: 'post_id' })
   postId: number;
 

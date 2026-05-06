@@ -3,12 +3,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
 @Entity('post_media')
+@Index('idx_post_media_sequence', ['post', 'sequenceOrder'])
 export class PostMedia {
   @PrimaryGeneratedColumn('increment')
   id: number;

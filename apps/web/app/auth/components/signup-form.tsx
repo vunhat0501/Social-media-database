@@ -1,7 +1,6 @@
 'use client';
 
-import { signUp } from '@/app/auth/lib/auth';
-import SubmitButton from '@/app/auth/components/submit-button';
+import { cn } from '@workspace/ui/lib/utils';
 import { Button } from '@workspace/ui/components/button';
 import {
   Card,
@@ -17,12 +16,54 @@ import {
   FieldLabel,
 } from '@workspace/ui/components/field';
 import { Input } from '@workspace/ui/components/input';
-import { useActionState } from 'react';
+import { useState } from 'react';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useRouter } from 'next/navigation';
+import { SignupFormSchema } from '@/app/auth/lib/type';
 
-export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
-  const [state, action] = useActionState(signUp, undefined);
+export function SignupForm({
+  className,
+  ...props
+}: React.ComponentProps<typeof Card>) {
+  const { signUp } = useAuthStore();
+  const [globalError, setGlobalError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setGlobalError(null);
+    setFieldErrors({});
+
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData);
+
+    const validation = SignupFormSchema.safeParse(data);
+    if (!validation.success) {
+      setFieldErrors(validation.error.flatten().fieldErrors);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await signUp({
+        name: validation.data.name,
+        email: validation.data.email,
+        password: validation.data.password,
+      });
+
+      router.push('/auth/signin');
+    } catch (err: any) {
+      setGlobalError(err.response?.data?.message || 'Failed to create account');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <Card {...props}>
+    <Card className={cn('flex flex-col gap-6', className)} {...props}>
       <CardHeader>
         <CardTitle>Create an account</CardTitle>
         <CardDescription>
@@ -30,11 +71,12 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={action}>
+        <form onSubmit={handleSubmit}>
           <FieldGroup>
-            {state?.message && (
-              <p className="text-sm text-red-500">{state.message}</p>
+            {globalError && (
+              <p className="text-sm font-medium text-red-500">{globalError}</p>
             )}
+
             <Field>
               <FieldLabel htmlFor="name">Full Name</FieldLabel>
               <Input
@@ -44,10 +86,11 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 placeholder="John Doe"
                 required
               />
+              {fieldErrors.name && (
+                <p className="text-sm text-red-500">{fieldErrors.name[0]}</p>
+              )}
             </Field>
-            {state?.error?.name && (
-              <p className="text-sm text-red-500">{state.error.name}</p>
-            )}
+
             <Field>
               <FieldLabel htmlFor="email">Email</FieldLabel>
               <Input
@@ -61,27 +104,29 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 We&apos;ll use this to contact you. We will not share your email
                 with anyone else.
               </FieldDescription>
+              {fieldErrors.email && (
+                <p className="text-sm text-red-500">{fieldErrors.email[0]}</p>
+              )}
             </Field>
-            {state?.error?.email && (
-              <p className="text-sm text-red-500">{state.error.email}</p>
-            )}
+
             <Field>
               <FieldLabel htmlFor="password">Password</FieldLabel>
               <Input id="password" name="password" type="password" required />
               <FieldDescription>
-                Must be at least 8 characters long.
+                Must be at least 8 characters, with 1 letter, 1 number, and 1
+                special character.
               </FieldDescription>
+              {fieldErrors.password && (
+                <div className="text-sm text-red-500">
+                  <ul className="list-disc pl-4 space-y-1">
+                    {fieldErrors.password.map((err, index) => (
+                      <li key={index}>{err}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </Field>
-            {state?.error?.password && (
-              <div className="text-sm text-red-500">
-                <p>Password must:</p>
-                <ul>
-                  {state.error.password.map((error) => (
-                    <li key={error}>{error}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+
             <Field>
               <FieldLabel htmlFor="confirm-password">
                 Confirm Password
@@ -93,23 +138,29 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                 required
               />
               <FieldDescription>Please confirm your password.</FieldDescription>
+              {fieldErrors.confirmPassword && (
+                <p className="text-sm text-red-500">
+                  {fieldErrors.confirmPassword[0]}
+                </p>
+              )}
             </Field>
-            {state?.error?.confirmPassword && (
-              <p className="text-sm text-red-500">
-                {state.error.confirmPassword}
-              </p>
-            )}
+
             <FieldGroup>
               <Field>
-                <SubmitButton
-                  text="Create Account"
-                  loadingText="Creating Account..."
-                />
-                <Button variant="outline" type="button">
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? 'Signing Up...' : 'Sign Up'}
+                </Button>
+                <Button variant="outline" type="button" className="w-full">
                   Sign up with Google
                 </Button>
                 <FieldDescription className="px-6 text-center">
-                  Already have an account? <a href="/auth/login">Sign in</a>
+                  Already have an account?{' '}
+                  <a
+                    href="/auth/signin"
+                    className="underline hover:text-primary"
+                  >
+                    Sign in
+                  </a>
                 </FieldDescription>
               </Field>
             </FieldGroup>

@@ -5,21 +5,21 @@ import { Comment } from '@/social/entities/comment.entity';
 import { Follow } from '@/social/entities/follow.entity';
 import { Like } from '@/social/entities/like.entity';
 import { Story } from '@/stories/entities/story.entity';
+import { Role } from '@workspace/types';
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   Index,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-enum Role {
-  ADMIN = 'admin',
-  USER = 'user',
-}
-
 @Entity('users')
+@Index('idx_active_users_username', ['userName'], {
+  where: 'deleted_at IS NULL',
+})
 export class User {
   @PrimaryGeneratedColumn('increment')
   id: number;
@@ -28,6 +28,7 @@ export class User {
   @Column({ name: 'user_name', unique: true })
   userName: string;
 
+  @Index()
   @Column({ unique: true })
   email: string;
 
@@ -42,6 +43,9 @@ export class User {
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
+
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
+  deletedAt: Date;
 
   @OneToMany(() => Auth, (auth) => auth.user)
   auths: Auth[];

@@ -1,21 +1,22 @@
-import { logout } from '@/app/auth/lib/auth';
+import { signOut as authSignOut } from '@/app/auth/lib/auth';
 import { api } from '@/lib/api';
 import { create } from 'zustand';
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-}
+import { AuthenticatedUser } from '@workspace/types';
 
 interface AuthState {
-  user: User | null;
+  user: AuthenticatedUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
 
-  login: (userData: User) => void;
-  logout: () => Promise<void>;
+  signUp: (credentials: {
+    name: string;
+    email: string;
+    password: string;
+  }) => Promise<void>;
+  signIn: (credentials: any) => Promise<void>;
+  signOut: () => Promise<void>;
   checkSession: () => Promise<void>;
+  deleteAccount: (userId: number) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -23,16 +24,39 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   isLoading: true,
 
-  login: (userData: User) =>
-    set({ user: userData, isAuthenticated: true, isLoading: false }),
+  signUp: async (credentials) => {
+    try {
+      const payload = {
+        userName: credentials.name,
+        email: credentials.email,
+        password: credentials.password,
+      };
 
-  logout: async () => {
+      await api.post('/auth/signup', payload);
+    } catch (error) {
+      console.error('Signup error:', error);
+      throw error;
+    }
+  },
+
+  signIn: async (credentials) => {
+    try {
+      const response = await api.post('/auth/signin', credentials);
+      const userData = response.data.data;
+      set({ user: userData, isAuthenticated: true, isLoading: false });
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
+  },
+
+  signOut: async () => {
     try {
       await api.post('/auth/signout');
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      await logout();
+      await authSignOut();
       set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
@@ -46,6 +70,21 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
     } catch (error) {
       set({ user: null, isAuthenticated: false, isLoading: false });
+    }
+  },
+
+  deleteAccount: async (userId: number) => {
+    try {
+      await api.delete(`/users/${userId}`);
+      await authSignOut();
+
+      set({ user: null, isAuthenticated: false, isLoading: false });
+      if (typeof window !== 'undefined') {
+        window.location.href = '/auth/signin';
+      }
+    } catch (error) {
+      console.error('Account deletion error:', error);
+      throw error;
     }
   },
 }));

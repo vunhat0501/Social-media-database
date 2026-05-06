@@ -13,6 +13,7 @@ import { DataSource, Repository } from 'typeorm';
 import { UserService } from '@/user/user.service';
 import { hash, verify } from 'argon2';
 import { User } from '@/user/entities/user.entity';
+import { AuthenticatedUser, Role } from '@workspace/types';
 import { AuthJwtPayload } from '@/auth/types/auth-jwt-payload';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
@@ -43,18 +44,21 @@ export class AuthService {
         userName: createAuthDto.userName,
         email: createAuthDto.email,
       });
-      const savedUser = await transactionalEntityManager.save(newUser);
+      const savedUser = await transactionalEntityManager.save(User, newUser);
       const newAuth = transactionalEntityManager.create(Auth, {
         hashedPassword,
         authProvider: 'local',
         user: savedUser,
       });
 
-      return transactionalEntityManager.save(newAuth);
+      return transactionalEntityManager.save(Auth, newAuth);
     });
   }
 
-  async validateLocalUser(email: string, password: string) {
+  async validateLocalUser(
+    email: string,
+    password: string,
+  ): Promise<AuthenticatedUser> {
     const authRecord = await this.authRepository.findOne({
       where: {
         authProvider: 'local',
@@ -72,16 +76,22 @@ export class AuthService {
     if (!isPasswordMatched) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    // * else return return user id, name, role */
     const { user } = authRecord;
     return {
       id: user.id,
       name: user.userName,
+      email: user.email,
+      role: user.role,
     };
   }
 
-  async login(userId: number, name: string) {
-    const { accessToken, refreshToken } = await this.generateTokens(userId);
+  async signIn(userId: number, name: string, email: string, role: Role) {
+    const { accessToken, refreshToken } = await this.generateTokens(
+      userId,
+      name,
+      email,
+      role,
+    );
     const hashedRefreshToken = await hash(refreshToken);
     const result = await this.authRepository.update(
       {
@@ -100,20 +110,27 @@ export class AuthService {
     return {
       id: userId,
       name,
+      email,
+      role,
       accessToken,
       refreshToken,
     };
   }
 
-  async logout(userId: number) {
+  async signOut(userId: number) {
     return this.authRepository.update(
       { user: userId as any, authProvider: 'local' },
       { refreshToken: null },
     );
   }
 
-  async generateTokens(userId: number) {
-    const payload: AuthJwtPayload = { sub: userId };
+  async generateTokens(
+    userId: number,
+    name: string,
+    email: string,
+    role: Role,
+  ) {
+    const payload: AuthJwtPayload = { sub: userId, name, email, role };
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(payload),
       this.jwtService.signAsync(payload, this.refreshTokenConfig),
@@ -125,8 +142,13 @@ export class AuthService {
     };
   }
 
-  async refreshToken(userId: number, name: string) {
-    const { accessToken, refreshToken } = await this.generateTokens(userId);
+  async refreshToken(userId: number, name: string, email: string, role: Role) {
+    const { accessToken, refreshToken } = await this.generateTokens(
+      userId,
+      name,
+      email,
+      role,
+    );
     const hashedRefreshToken = await hash(refreshToken);
     const result = await this.authRepository.update(
       {
@@ -144,26 +166,28 @@ export class AuthService {
     return {
       id: userId,
       name,
+      email,
+      role,
       accessToken,
       refreshToken,
     };
   }
 
-  async validateJwtUser(userId: number) {
-    const user = await this.userService.findOne(userId);
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-    const currentUser = {
-      id: user.id,
-      name: user.userName,
-      email: user.email,
+  async validateJwtUser(payload: AuthJwtPayload): Promise<AuthenticatedUser> {
+    const currentUser: AuthenticatedUser = {
+      id: payload.sub,
+      name: payload.name,
+      email: payload.email,
+      role: payload.role as Role,
     };
 
     return currentUser;
   }
 
-  async validateRefreshToken(userId: number, refreshToken: string) {
+  async validateRefreshToken(
+    userId: number,
+    refreshToken: string,
+  ): Promise<AuthenticatedUser> {
     const authRecord = await this.authRepository.findOne({
       where: {
         authProvider: 'local',
@@ -190,6 +214,7 @@ export class AuthService {
       id: user.id,
       name: user.userName,
       email: user.email,
+      role: user.role,
     };
   }
 

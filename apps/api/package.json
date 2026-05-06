@@ -19,9 +19,10 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "typeorm": "ts-node -P tsconfig.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
-    "migration:generate": "pnpm run typeorm migration:generate -d src/database/data-source.ts",
-    "migration:run": "pnpm run typeorm migration:run -d src/database/data-source.ts",
-    "migration:revert": "pnpm run typeorm migration:revert -d src/database/data-source.ts",
+    "migration:pg:generate": "pnpm run typeorm migration:generate -d src/database/data-source.ts",
+    "migration:pg:run": "pnpm run typeorm migration:run -d src/database/data-source.ts",
+    "migration:pg:revert": "pnpm run typeorm migration:revert -d src/database/data-source.ts",
+    "migration:pg:drop": "ts-node -P tsconfig.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js schema:drop -d src/database/data-source.ts",
     "seed": "ts-node -P tsconfig.json -r tsconfig-paths/register src/database/seed.ts"
   },
   "dependencies": {
@@ -66,6 +67,7 @@
     "@workspace/eslint-config": "workspace:*",
     "@workspace/jest-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
+    "@workspace/types": "workspace:*",
     "eslint": "catalog:",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
