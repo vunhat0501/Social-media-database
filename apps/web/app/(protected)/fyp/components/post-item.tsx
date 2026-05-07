@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Trash2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@workspace/ui/components/avatar';
 import { Button } from '@workspace/ui/components/button';
 import { CommentSection } from './comment-section';
@@ -21,7 +21,19 @@ export const PostItem = ({ post }: { post: any }) => {
     }
   }, [currentUserId, post.likes]);
   
+  const isOwner = currentUserId === post.user?.id;
   const toggleComment = () => setIsCommentOpen(!isCommentOpen);
+
+  const handleDelete = async () => {
+    if (!confirm('Bạn có chắc chắn muốn xóa bài viết này không?')) return;
+    try {
+      await api.delete(`/posts/${post.id}`);
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to delete post:', error);
+      alert('Không thể xóa bài viết. Vui lòng thử lại sau.');
+    }
+  };
 
   const handleLike = async () => {
     // Optimistic UI update
@@ -115,11 +127,19 @@ export const PostItem = ({ post }: { post: any }) => {
               <span className="text-white text-xs drop-shadow-md font-medium">Chia sẻ</span>
             </button>
 
-            <button className="flex flex-col items-center gap-1 group mt-2">
-              <div className="p-2 rounded-full hover:bg-black/20 transition">
-                <MoreHorizontal className="w-6 h-6 text-white drop-shadow-md" />
-              </div>
-            </button>
+            {isOwner ? (
+              <button onClick={handleDelete} className="flex flex-col items-center gap-1 group mt-2">
+                <div className="p-2 rounded-full hover:bg-red-500/20 transition">
+                  <Trash2 className="w-6 h-6 text-red-500 drop-shadow-md" />
+                </div>
+              </button>
+            ) : (
+              <button className="flex flex-col items-center gap-1 group mt-2">
+                <div className="p-2 rounded-full hover:bg-black/20 transition">
+                  <MoreHorizontal className="w-6 h-6 text-white drop-shadow-md" />
+                </div>
+              </button>
+            )}
           </div>
         </div>
 
