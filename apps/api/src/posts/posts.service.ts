@@ -90,8 +90,10 @@ export class PostsService {
     }
   }
 
-  findAll(page: number = 1, limit: number = 20) {
+  findAll(page: number = 1, limit: number = 20, userId?: number) {
+    const whereCondition = userId ? { user: { id: userId } } : {};
     return this.postsRepository.find({
+      where: whereCondition,
       relations: ['user', 'media', 'comments', 'comments.user', 'likes'],
       order: {
         createdAt: 'DESC',
@@ -200,7 +202,7 @@ export class PostsService {
       throw new NotFoundException(`Post #${id} not found or you don't have permission to delete it.`);
     }
     
-    await this.postsRepository.remove(post);
+    await this.postsRepository.softRemove(post);
     return { success: true, message: `Post #${id} removed successfully.` };
   }
 }

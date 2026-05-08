@@ -4,15 +4,18 @@ import React, { useEffect, useState, use } from 'react';
 import { api } from '@/lib/api';
 import { Avatar, AvatarFallback, AvatarImage } from '@workspace/ui/components/avatar';
 import { Input } from '@workspace/ui/components/input';
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useRouter } from 'next/navigation';
+import { PostOptionsMenu } from '@/app/(protected)/components/post-options-menu';
+import { EditPostModal } from '@/app/(protected)/components/edit-post-modal';
 
 export default function ExplorePostPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const postId = resolvedParams.id;
   
   const { user } = useAuthStore();
-  const currentUserId = user?.id ? parseInt(user.id) : null;
+  const currentUserId = user?.id || null;
   
   const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -21,6 +24,24 @@ export default function ExplorePostPage({ params }: { params: Promise<{ id: stri
   const [likeCount, setLikeCount] = useState(0);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
   const [newComment, setNewComment] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  
+  const router = useRouter();
+
+  const handleDelete = async () => {
+    if (!confirm('Bạn có chắc chắn muốn xóa bài viết này không?')) return;
+    try {
+      await api.delete(`/posts/${postId}`);
+      router.back();
+    } catch (error) {
+      console.error('Failed to delete post:', error);
+      alert('Không thể xóa bài viết. Vui lòng thử lại sau.');
+    }
+  };
+
+  const handleEditSuccess = (updatedPost: any) => {
+    setPost(updatedPost);
+  };
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -153,8 +174,21 @@ export default function ExplorePostPage({ params }: { params: Promise<{ id: stri
               <span className="font-semibold text-sm hover:text-zinc-300 cursor-pointer transition">{post.user?.userName || 'user'}</span>
               <span className="text-zinc-500 text-xs font-medium">• Theo dõi</span>
             </div>
-            <MoreHorizontal className="w-5 h-5 cursor-pointer hover:text-zinc-400 transition" />
+            <PostOptionsMenu 
+              isOwner={currentUserId === post.user?.id} 
+              onDelete={handleDelete} 
+              onEdit={() => setIsEditing(true)}
+              className="cursor-pointer hover:text-zinc-400 transition text-white"
+              iconClassName="w-5 h-5"
+            />
           </div>
+
+          <EditPostModal 
+            post={post} 
+            open={isEditing} 
+            onOpenChange={setIsEditing} 
+            onSuccess={handleEditSuccess} 
+          />
 
           {/* Comments Area (Scrollable) */}
           <div className="flex-1 overflow-y-auto p-4 space-y-5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">

@@ -21,8 +21,9 @@ export class PostsController {
   findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 20,
+    @Query('userId') userId?: number,
   ) {
-    return this.postsService.findAll(page, limit);
+    return this.postsService.findAll(page, limit, userId);
   }
 
   @Public()

@@ -5,29 +5,33 @@ import { Button } from '@workspace/ui/components/button';
 import { CommentSection } from './comment-section';
 import { useAuthStore } from '@/store/useAuthStore';
 import { api } from '@/lib/api';
+import { EditPostModal } from '@/app/(protected)/components/edit-post-modal';
 
 export const PostItem = ({ post }: { post: any }) => {
   const { user } = useAuthStore();
-  const currentUserId = user?.id ? parseInt(user.id) : null;
+  const currentUserId = user?.id || null;
 
   const [isCommentOpen, setIsCommentOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likes?.length || 0);
   const [showHeartAnimation, setShowHeartAnimation] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentPost, setCurrentPost] = useState(post);
 
   useEffect(() => {
     if (currentUserId) {
-      setIsLiked(post.likes?.some((like: any) => like.userId === currentUserId) || false);
+      setIsLiked(currentPost.likes?.some((like: any) => like.userId === currentUserId) || false);
     }
-  }, [currentUserId, post.likes]);
+  }, [currentUserId, currentPost.likes]);
   
-  const isOwner = currentUserId === post.user?.id;
+  const isOwner = currentUserId === currentPost.user?.id;
   const toggleComment = () => setIsCommentOpen(!isCommentOpen);
 
   const handleDelete = async () => {
     if (!confirm('Bạn có chắc chắn muốn xóa bài viết này không?')) return;
     try {
-      await api.delete(`/posts/${post.id}`);
+      await api.delete(`/posts/${currentPost.id}`);
       window.location.reload();
     } catch (error) {
       console.error('Failed to delete post:', error);
@@ -46,7 +50,7 @@ export const PostItem = ({ post }: { post: any }) => {
     }
 
     try {
-      await api.post(`/social/like/${post.id}`);
+      await api.post(`/social/like/${currentPost.id}`);
     } catch (error) {
       // Revert if API fails
       setIsLiked(!newIsLiked);
@@ -69,7 +73,7 @@ export const PostItem = ({ post }: { post: any }) => {
   };
 
   // Safely get media URL, ignoring mediaType as requested
-  const mediaUrl = post.media?.[0]?.mediaUrl || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop';
+  const mediaUrl = currentPost.media?.[0]?.mediaUrl || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop';
   
   return (
     <div className="h-full snap-start snap-always flex items-center justify-center relative w-full mb-4">
@@ -93,15 +97,15 @@ export const PostItem = ({ post }: { post: any }) => {
           <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white pt-12">
             <div className="flex items-center gap-2 mb-3">
               <Avatar className="w-8 h-8 border border-white/20">
-                <AvatarImage src={post.user?.avatarUrl || ''} />
-                <AvatarFallback className="text-black">{post.user?.userName?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
+                <AvatarImage src={currentPost.user?.avatarUrl || ''} />
+                <AvatarFallback className="text-black">{currentPost.user?.userName?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
               </Avatar>
-              <span className="font-semibold text-sm drop-shadow-md">{post.user?.userName || 'user'}</span>
+              <span className="font-semibold text-sm drop-shadow-md">{currentPost.user?.userName || 'user'}</span>
               <Button variant="outline" size="sm" className="h-6 text-xs ml-2 rounded-full border-white text-white hover:bg-white hover:text-black bg-transparent">
                 Theo dõi
               </Button>
             </div>
-            <p className="text-sm line-clamp-2 drop-shadow-md">{post.title}</p>
+            <p className="text-sm line-clamp-2 drop-shadow-md">{currentPost.title}</p>
           </div>
 
           {/* Action Bar (Right side, floating inside media) */}
@@ -117,7 +121,7 @@ export const PostItem = ({ post }: { post: any }) => {
               <div className="p-2 rounded-full hover:bg-black/20 transition">
                 <MessageCircle className="w-7 h-7 text-white drop-shadow-md" />
               </div>
-              <span className="text-white text-xs drop-shadow-md font-medium">{post.comments?.length || 0}</span>
+              <span className="text-white text-xs drop-shadow-md font-medium">{currentPost.comments?.length || 0}</span>
             </button>
 
             <button className="flex flex-col items-center gap-1 group">
@@ -127,30 +131,53 @@ export const PostItem = ({ post }: { post: any }) => {
               <span className="text-white text-xs drop-shadow-md font-medium">Chia sẻ</span>
             </button>
 
-            {isOwner ? (
-              <button onClick={handleDelete} className="flex flex-col items-center gap-1 group mt-2">
-                <div className="p-2 rounded-full hover:bg-red-500/20 transition">
-                  <Trash2 className="w-6 h-6 text-red-500 drop-shadow-md" />
-                </div>
-              </button>
-            ) : (
-              <button className="flex flex-col items-center gap-1 group mt-2">
-                <div className="p-2 rounded-full hover:bg-black/20 transition">
-                  <MoreHorizontal className="w-6 h-6 text-white drop-shadow-md" />
-                </div>
-              </button>
-            )}
+            <button onClick={() => setIsMenuOpen(true)} className="flex flex-col items-center gap-1 group mt-2">
+              <div className="p-2 rounded-full hover:bg-black/20 transition">
+                <MoreHorizontal className="w-6 h-6 text-white drop-shadow-md" />
+              </div>
+            </button>
           </div>
         </div>
 
         {/* Comment Section Panel */}
         {isCommentOpen && (
           <div className="w-[350px] h-full flex-shrink-0 animate-in slide-in-from-left-10 fade-in duration-300">
-            <CommentSection post={post} onClose={() => setIsCommentOpen(false)} />
+            <CommentSection post={currentPost} onClose={() => setIsCommentOpen(false)} />
           </div>
         )}
 
       </div>
+
+      {/* Options Menu Modal */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)}>
+          <div className="bg-[#262626] w-[400px] rounded-xl flex flex-col text-sm font-semibold overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+            {isOwner ? (
+              <>
+                <button onClick={handleDelete} className="py-3.5 border-b border-white/10 text-red-500 hover:bg-white/5 transition w-full text-center">Xóa</button>
+                <button onClick={() => { setIsMenuOpen(false); setIsEditing(true); }} className="py-3.5 border-b border-white/10 text-white hover:bg-white/5 transition w-full text-center">Chỉnh sửa</button>
+                <button className="py-3.5 border-b border-white/10 text-white hover:bg-white/5 transition w-full text-center">Ẩn số lượt thích với những người khác</button>
+                <button className="py-3.5 border-b border-white/10 text-white hover:bg-white/5 transition w-full text-center">Tắt tính năng bình luận</button>
+              </>
+            ) : (
+              <button className="py-3.5 border-b border-white/10 text-red-500 hover:bg-white/5 transition w-full text-center">Báo cáo</button>
+            )}
+            <button className="py-3.5 border-b border-white/10 text-white hover:bg-white/5 transition w-full text-center">Đi đến bài viết</button>
+            <button className="py-3.5 border-b border-white/10 text-white hover:bg-white/5 transition w-full text-center">Chia sẻ lên...</button>
+            <button className="py-3.5 border-b border-white/10 text-white hover:bg-white/5 transition w-full text-center">Sao chép liên kết</button>
+            <button className="py-3.5 border-b border-white/10 text-white hover:bg-white/5 transition w-full text-center">Nhúng</button>
+            <button className="py-3.5 border-b border-white/10 text-white hover:bg-white/5 transition w-full text-center">Giới thiệu về tài khoản này</button>
+            <button onClick={() => setIsMenuOpen(false)} className="py-3.5 text-white hover:bg-white/5 transition w-full text-center">Hủy</button>
+          </div>
+        </div>
+      )}
+
+      <EditPostModal 
+        post={currentPost} 
+        open={isEditing} 
+        onOpenChange={setIsEditing} 
+        onSuccess={setCurrentPost} 
+      />
     </div>
   );
 };
