@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useParams } from 'next/navigation'; // <-- Thêm useParams
 import {
   Sparkles,
   User as UserIcon,
@@ -8,7 +8,9 @@ import {
   LogOut,
   ChevronsUpDown,
   Hash,
+  PlusCircle,
 } from 'lucide-react';
+import { CreatePostModal } from './create-post-modal';
 
 import {
   Sidebar,
@@ -66,6 +68,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar variant="inset">
+      {/* ... Phần JSX còn lại giữ nguyên như cũ ... */}
       <SidebarHeader className="h-16 flex items-center justify-center border-b px-4">
         <div className="flex w-full items-center gap-2 font-bold text-lg tracking-tight">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -82,8 +85,22 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem className="mb-4">
+                <CreatePostModal>
+                  <SidebarMenuButton
+                    asChild
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg flex items-center justify-center font-bold py-6 rounded-full"
+                  >
+                    <button>
+                      <PlusCircle className="mr-2 h-5 w-5" />
+                      <span className="text-base">Create Post</span>
+                    </button>
+                  </SidebarMenuButton>
+                </CreatePostModal>
+              </SidebarMenuItem>
               {navItems.map((item) => {
-                const isActive = pathname === item.url;
+                // Kiểm tra active (Có thể cần điều chỉnh nếu URL chứa ID)
+                const isActive = pathname.startsWith(item.url);
 
                 return (
                   <SidebarMenuItem key={item.title}>
@@ -106,6 +123,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t p-4">
+        {/* ... Phần Footer của bạn giữ nguyên ... */}
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
