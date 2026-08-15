@@ -15,20 +15,19 @@ export async function proxy(request: NextRequest) {
         {
           method: 'POST',
           headers: {
-            Cookie: `refresh_token=${refreshToken}`,
+            Authorization: `Bearer ${refreshToken}`,
           },
         },
       );
 
       if (refreshRes.ok) {
-        const setCookies = refreshRes.headers.getSetCookie();
-        let newAccessToken = '';
-
-        setCookies.forEach((cookie) => {
-          if (cookie.startsWith('access_token=')) {
-            newAccessToken = cookie.split(';')[0].split('=')[1];
-          }
-        });
+        const data = await refreshRes.json();
+        if (!refreshRes.ok) {
+          console.error('NestJS Refresh Error:', data);
+          return NextResponse.json(data, { status: refreshRes.status });
+        }
+        const newAccessToken = data.data?.accessToken;
+        const newRefreshToken = data.data?.refreshToken;
 
         if (newAccessToken) {
           accessToken = newAccessToken;
@@ -42,9 +41,23 @@ export async function proxy(request: NextRequest) {
               headers: request.headers,
             },
           });
-          setCookies.forEach((cookie) => {
-            response.headers.append('Set-Cookie', cookie);
+          response.cookies.set('access_token', newAccessToken, {
+            httpOnly: true,
+            secure: env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 15 * 60,
           });
+
+          if (newRefreshToken) {
+            response.cookies.set('refresh_token', newRefreshToken, {
+              httpOnly: true,
+              secure: env.NODE_ENV === 'production',
+              sameSite: 'lax',
+              path: '/',
+              maxAge: 7 * 24 * 60 * 60,
+            });
+          }
 
           if (isAuthPage) {
             return NextResponse.redirect(new URL('/profile', request.url));

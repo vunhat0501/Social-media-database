@@ -7,9 +7,7 @@ import {
   Delete,
   UseGuards,
   Req,
-  Res,
   Get,
-  UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateAuthDto } from './dto/create-auth.dto';
@@ -18,7 +16,6 @@ import { LocalAuthGuard } from '@/auth/guards/local-auth/local-auth.guard';
 import { Request, Response } from 'express';
 import { GetUser } from '@/auth/decorators/get-user.decorator';
 import { RefreshAuthGuard } from '@/auth/guards/refresh-auth/refresh-auth.guard';
-import { TokenInterceptor } from '@/auth/interceptor/token.interceptor';
 import { Public } from '@/auth/decorators/public.decorator';
 import { AuthenticatedUser } from '@workspace/types';
 
@@ -34,7 +31,6 @@ export class AuthController {
 
   @Public()
   @UseGuards(LocalAuthGuard)
-  @UseInterceptors(TokenInterceptor)
   @Post('signin')
   async signIn(@Req() req: Request) {
     const user = req.user as AuthenticatedUser;
@@ -43,7 +39,6 @@ export class AuthController {
 
   @Public()
   @UseGuards(RefreshAuthGuard)
-  @UseInterceptors(TokenInterceptor)
   @Post('refresh')
   async refreshToken(@Req() req: Request) {
     const user = req.user as AuthenticatedUser;
@@ -66,13 +61,8 @@ export class AuthController {
   }
 
   @Post('signout')
-  async signOut(
-    @GetUser('id') userId: number,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  async signOut(@GetUser('id') userId: number) {
     await this.authService.signOut(userId);
-    res.clearCookie('access_token', { path: '/' });
-    res.clearCookie('refresh_token', { path: '/' });
     return { success: true };
   }
 
