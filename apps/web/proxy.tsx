@@ -23,7 +23,6 @@ export async function proxy(request: NextRequest) {
       if (refreshRes.ok) {
         const data = await refreshRes.json();
         if (!refreshRes.ok) {
-          console.error('NestJS Refresh Error:', data);
           return NextResponse.json(data, { status: refreshRes.status });
         }
         const newAccessToken = data.data?.accessToken;
@@ -74,7 +73,10 @@ export async function proxy(request: NextRequest) {
         return response;
       }
     } catch (error) {
-      console.error('Middleware token refresh error:', error);
+      return NextResponse.json(
+        { message: 'Internal server error', error },
+        { status: 500 },
+      );
     }
   }
 

@@ -13,9 +13,16 @@ import {
 import { Button } from '@workspace/ui/components/button';
 import { Textarea } from '@workspace/ui/components/textarea';
 import { Input } from '@workspace/ui/components/input';
-import { Sparkles, MapPin, Globe, Image as ImageIcon, Lock } from 'lucide-react';
+import {
+  Sparkles,
+  MapPin,
+  Globe,
+  Image as ImageIcon,
+  Lock,
+} from 'lucide-react';
 import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export function CreatePostModal({ children }: { children?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -64,11 +71,11 @@ export function CreatePostModal({ children }: { children?: React.ReactNode }) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-125">
         <DialogHeader>
           <DialogTitle>Create new post</DialogTitle>
           <DialogDescription>
-            Share what's on your mind with the world.
+            Share what`&apos;`s on your mind with the world.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -76,7 +83,7 @@ export function CreatePostModal({ children }: { children?: React.ReactNode }) {
             placeholder="What is happening?!"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="min-h-[120px] resize-none border-0 focus-visible:ring-0 text-lg px-0 shadow-none bg-transparent"
+            className="min-h-30 resize-none border-0 focus-visible:ring-0 text-lg px-0 shadow-none bg-transparent"
           />
           {showMediaInput && (
             <div className="animate-in fade-in slide-in-from-top-2 duration-200">
@@ -87,12 +94,15 @@ export function CreatePostModal({ children }: { children?: React.ReactNode }) {
                 className="h-10 text-sm bg-secondary/30 rounded-md mb-2 border-primary/20"
               />
               {mediaUrl && (
-                <div className="relative rounded-xl overflow-hidden max-h-[300px] border border-border">
-                  <img
+                <div className="relative rounded-xl overflow-hidden max-h-75 border border-border">
+                  <Image
                     src={mediaUrl}
                     alt="Preview"
-                    className="object-contain w-full h-full max-h-[300px] bg-black/5"
-                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400/png?text=Invalid+Image+URL' }}
+                    className="object-contain w-full h-full max-h-75 bg-black/5"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        'https://placehold.co/600x400/png?text=Invalid+Image+URL';
+                    }}
                   />
                 </div>
               )}
@@ -120,9 +130,15 @@ export function CreatePostModal({ children }: { children?: React.ReactNode }) {
               variant="outline"
               size="sm"
               className="h-8 gap-1 rounded-full ml-auto"
-              onClick={() => setStatus(status === 'public' ? 'private' : 'public')}
+              onClick={() =>
+                setStatus(status === 'public' ? 'private' : 'public')
+              }
             >
-              {status === 'public' ? <Globe className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+              {status === 'public' ? (
+                <Globe className="w-4 h-4" />
+              ) : (
+                <Lock className="w-4 h-4" />
+              )}
               <span className="capitalize">{status}</span>
             </Button>
           </div>

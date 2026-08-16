@@ -21,7 +21,6 @@ export async function POST(req: NextRequest) {
     );
     const data = await backendRes.json();
     if (!backendRes.ok) {
-      console.error('NestJS Refresh Error:', data);
       return NextResponse.json(data, { status: backendRes.status });
     }
 
@@ -48,6 +47,9 @@ export async function POST(req: NextRequest) {
     }
     return response;
   } catch (error) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json(
+      { message: 'Unauthorized', error },
+      { status: 401 },
+    );
   }
 }
